@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Others unknown
+.tlog
+.log
+.bsc
+.db
+.vcxproj
+.sln
+.idb
+.sbr
+.pdb
+.ilk
