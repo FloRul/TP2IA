@@ -1435,6 +1435,68 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
   return Arrive(WorldOffsetPos + leader->Velocity() * LookAheadTime, fast);
 }
 
+//-------------------------  CohesionFlockingV  -------------------------------
+//
+//  Produces a steering force that make agents accelerate if they are too
+//  far from the group
+//-----------------------------------------------------------------------------
+Vector2D SteeringBehavior::CohesionFlockingV(const vector<Vehicle*> &neighbors)
+{
+	// TODO
+}
+
+//-------------------------  OffsetVision  -------------------------------
+//
+//  Produces a steering force that make agents move to the side 
+//  if they are near an agent
+//------------------------------------------------------------------------
+Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &agents)
+{ 
+	// TODO
+}
+
+//-------------------------  SlowDown  -------------------------------
+//
+//  Produces a steering force that make agents decelerate if they are too
+//  close to another agent.
+//-----------------------------------------------------------------------------
+Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
+{
+	// TODO
+}
+
+
+//-------------------------  Flocking V  -------------------------------
+//
+//  Produces a steering force that imitate the behavior of wild birds
+//  based on 4 rules
+//----------------------------------------------------------------------
+Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
+{
+	// Call rule n°1
+	Vector2D rule1 = CohesionFlockingV(neighbors);
+
+	// Call rule n°2
+	Vector2D rule2 = OffsetVision(neighbors);
+
+	// Call rule n°3
+	Vector2D rule3 = SlowDown(neighbors);
+
+	// if all the previous conditions are fill,
+	// the agent adapt his speed and heading with his neighborhood
+	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
+		rule3 == Vector2D(0,0))
+	{
+		// Adapter la speed + heading ici
+		return;
+	}
+	else
+	{
+		// Appliquer une pondération surement aprés tests successifs.
+		return rule1 + rule2 + rule3;
+	}
+}
+
 
 
 //for receiving keyboard input from user

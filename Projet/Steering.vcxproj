@@ -196,6 +196,7 @@
     <ClInclude Include="BaseGameEntity.h" />
     <ClInclude Include="..\Common\misc\CellSpacePartition.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="Bird.h" />
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="LeaderFollowingAgent.h" />
     <ClInclude Include="MovingEntity.h" />

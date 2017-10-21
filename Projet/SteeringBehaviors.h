@@ -235,16 +235,26 @@ private:
   // -- Group Behaviors -- //
 
   Vector2D Cohesion(const std::vector<Vehicle*> &agents);
-  
   Vector2D Separation(const std::vector<Vehicle*> &agents);
-
   Vector2D Alignment(const std::vector<Vehicle*> &agents);
+
+  // -- Flocking V -- //
+
+  Vector2D FlockingV(const std::vector<Vehicle*> &agents);
+  Vector2D CohesionFlockingV(const std::vector<Vehicle*> &agents);
+  Vector2D OffsetVision(const std::vector<Vehicle*> &agents);
+  Vector2D SlowDown(const std::vector<Vehicle*> &agents);
+
 
   //the following three are the same as above but they use cell-space
   //partitioning to find the neighbors
   Vector2D CohesionPlus(const std::vector<Vehicle*> &agents);
   Vector2D SeparationPlus(const std::vector<Vehicle*> &agents);
   Vector2D AlignmentPlus(const std::vector<Vehicle*> &agents);
+
+  
+
+
 
     /* .......................................................
 
