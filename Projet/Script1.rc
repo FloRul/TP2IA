@@ -55,6 +55,27 @@ BEGIN
     END
 END
 
+// -- Boite de dialogue parametrage -- //
+
+DIALOG1 DIALOG
+	60, 70, 100, 150
+	STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+	CAPTION "Parametrage de l'application"
+BEGIN
+	GROUPBOX " Nombre de leaders ", -1, 10, 10, 80, 30, WS_GROUP
+		AUTORADIOBUTTON "0", ID_ZERO_LEADER, 17, 20, 20, 15,
+		AUTORADIOBUTTON "1", ID_ONE_LEADER, 39, 20, 20, 15,
+		AUTORADIOBUTTON "2", ID_TWO_LEADER, 62, 20, 20, 15,
+
+	GROUPBOX " Leader humain ", -1, 10, 40, 80, 30, WS_GROUP
+		AUTORADIOBUTTON "Oui", ID_HUMAN_AGENT, 17, 50, 40, 15,
+		AUTORADIOBUTTON "Non", ID_NOT_HUMAN_AGENT, 45, 50, 40, 15,
+
+	GROUPBOX " Nombre poursuiveurs ", -1, 10, 70, 80, 30, WS_GROUP
+		EDITTEXT ID_NB_AGENT_FOLLOWER, 15, 80, 60, 12, ES_NUMBER | ES_RIGHT
+END
+
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
