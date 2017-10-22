@@ -26,6 +26,8 @@ class CController;
 class Wall2D;
 class BaseGameEntity;
 class BaseGameEntity;
+class LeaderAgent;
+class FollowerAgent;
 
 
 
@@ -241,6 +243,9 @@ private:
 	//method attempts to put an obstacle between itself and its opponent
 	Vector2D Hide(const Vehicle* hunter, const std::vector<BaseGameEntity*>& obstacles);
 
+	//Question1 leaderFollowingAgent
+	//The leader has a wander steeringBehavior while the followers have this one
+	Vector2D FollowLeaderWithOffset(const LeaderAgent* leader, const std::vector<FollowerAgents*> &fAgents);
 
 	// -- Group Behaviors -- //
 

@@ -1,5 +1,7 @@
 #include "SteeringBehaviors.h"
 #include "Vehicle.h"
+#include "FollowerAgents.h"
+#include "LeaderAgent.h"
 #include "2d/Wall2D.h"
 #include "2d/Transformations.h"
 #include "misc/utils.h"
@@ -1505,6 +1507,20 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
 
 
 //for receiving keyboard input from user
+
+
+Vector2D SteeringBehavior::FollowLeaderWithOffset(
+	const LeaderAgent* leader, 
+	const std::vector<FollowerAgents*> &fAgents) 
+{
+
+
+}
+
+
+
+
+
 #define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 //----------------------------- RenderAids -------------------------------
 //
