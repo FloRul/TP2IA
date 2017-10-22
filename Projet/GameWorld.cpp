@@ -67,7 +67,9 @@ GameWorld::GameWorld(int cx, int cy):
                                     Prm.MaxTurnRatePerSecond, //max turn rate
                                     Prm.VehicleScale);        //scale
 
-    pVehicle->Steering()->FlockingOn();
+    //pVehicle->Steering()->FlockingOn();
+	// Test
+	pVehicle->Steering()->FlockingVOn();
 
     m_Vehicles.push_back(pVehicle);
 
@@ -75,6 +77,7 @@ GameWorld::GameWorld(int cx, int cy):
     m_pCellSpace->AddEntity(pVehicle);
   }
 
+  // TODO faire des ifs dependant des resultats des menus déroulants
 
 #define SHOAL
 #ifdef SHOAL

@@ -92,7 +92,8 @@ Vector2D SteeringBehavior::Calculate()
   if (!isSpacePartitioningOn())
   {
     //tag neighbors if any of the following 3 group behaviors are switched on
-    if (On(separation) || On(allignment) || On(cohesion))
+    if (On(separation) || On(allignment) || On(cohesion) ||
+		On(cohesionV) || On(offset_vision) || On(slow_down))
     {
       m_pVehicle->World()->TagVehiclesWithinViewRange(m_pVehicle, m_dViewDistance);
     }
@@ -101,7 +102,8 @@ Vector2D SteeringBehavior::Calculate()
   {
     //calculate neighbours in cell-space if any of the following 3 group
     //behaviors are switched on
-    if (On(separation) || On(allignment) || On(cohesion))
+    if (On(separation) || On(allignment) || On(cohesion) ||
+		On(cohesionV) || On(offset_vision) || On(slow_down))
     {
       m_pVehicle->World()->CellSpace()->CalculateNeighbors(m_pVehicle->Pos(), m_dViewDistance);
     }
@@ -1435,14 +1437,15 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
   return Arrive(WorldOffsetPos + leader->Velocity() * LookAheadTime, fast);
 }
 
-//-------------------------  CohesionFlockingV  -------------------------------
+//-------------------------  CohesionV  -------------------------------
 //
 //  Produces a steering force that make agents accelerate if they are too
 //  far from the group
 //-----------------------------------------------------------------------------
-Vector2D SteeringBehavior::CohesionFlockingV(const vector<Vehicle*> &neighbors)
+Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 {
 	// TODO
+	return Vector2D(0,0);
 }
 
 //-------------------------  OffsetVision  -------------------------------
@@ -1451,8 +1454,9 @@ Vector2D SteeringBehavior::CohesionFlockingV(const vector<Vehicle*> &neighbors)
 //  if they are near an agent
 //------------------------------------------------------------------------
 Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &agents)
-{ 
+{
 	// TODO
+	return Vector2D(0,0);
 }
 
 //-------------------------  SlowDown  -------------------------------
@@ -1463,6 +1467,7 @@ Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &agents)
 Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
 {
 	// TODO
+	return Vector2D(0,0);
 }
 
 
@@ -1471,31 +1476,31 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
 //  Produces a steering force that imitate the behavior of wild birds
 //  based on 4 rules
 //----------------------------------------------------------------------
-Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
-{
-	// Call rule n°1
-	Vector2D rule1 = CohesionFlockingV(neighbors);
-
-	// Call rule n°2
-	Vector2D rule2 = OffsetVision(neighbors);
-
-	// Call rule n°3
-	Vector2D rule3 = SlowDown(neighbors);
-
-	// if all the previous conditions are fill,
-	// the agent adapt his speed and heading with his neighborhood
-	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
-		rule3 == Vector2D(0,0))
-	{
-		// Adapter la speed + heading ici
-		return;
-	}
-	else
-	{
-		// Appliquer une pondération surement aprés tests successifs.
-		return rule1 + rule2 + rule3;
-	}
-}
+//Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
+//{
+//	// Call rule n°1
+//	Vector2D rule1 = CohesionV(neighbors);
+//
+//	// Call rule n°2
+//	Vector2D rule2 = OffsetVision(neighbors);
+//
+//	// Call rule n°3
+//	Vector2D rule3 = SlowDown(neighbors);
+//
+//	// if all the previous conditions are fill,
+//	// the agent adapt his speed and heading with his neighborhood
+//	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
+//		rule3 == Vector2D(0,0))
+//	{
+//		// Adapter la speed + heading ici
+//		return;
+//	}
+//	else
+//	{
+//		// Appliquer une pondération surement aprés tests successifs.
+//		return rule1 + rule2 + rule3;
+//	}
+//}
 
 
 
