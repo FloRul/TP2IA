@@ -21,6 +21,11 @@ char*	g_szWindowClassName = "MyWindowClass";
 
 GameWorld* g_GameWorld;
 
+UINT nb_leader;
+UINT agent_humain;
+HINSTANCE hinst;
+
+BOOL APIENTRY Dialog1Proc(HWND, UINT, WPARAM, LPARAM);
 
 //---------------------------- WindowProc ---------------------------------
 //	
@@ -76,15 +81,22 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 
 			  
          //select the bitmap into the memory device context
-			   hOldBitmap = (HBITMAP)SelectObject(hdcBackBuffer, hBitmap);
+		 hOldBitmap = (HBITMAP)SelectObject(hdcBackBuffer, hBitmap);
 
          //don't forget to release the DC
          ReleaseDC(hwnd, hdc); 
          
          g_GameWorld = new GameWorld(cxClient, cyClient);
 
+		 // Ask user to enter informations for leader agent
+		 CreateDialog(hinst, "DIALOG1", hwnd, (DLGPROC)Dialog1Proc);
+
          ChangeMenuState(hwnd, IDR_PRIORITIZED, MFS_CHECKED);
          ChangeMenuState(hwnd, ID_VIEW_FPS, MFS_CHECKED);
+
+		 // Nombre d'agents leaders dans l'application
+		 int nb_leader = 0;
+		 //int agent_humain = 0;
          
       }
 
@@ -197,6 +209,54 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 		 //winproc are sent to be processed
 		 return DefWindowProc (hwnd, msg, wParam, lParam);
 }
+
+
+BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+	{
+		if (nb_leader == 0) CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
+		if (nb_leader == 1) CheckDlgButton(hDlg, ID_ONE_LEADER, BST_CHECKED);
+		if (nb_leader == 2) CheckDlgButton(hDlg, ID_TWO_LEADER, BST_CHECKED);
+		CheckRadioButton(hDlg, ID_HUMAN_AGENT, ID_NOT_HUMAN_AGENT, agent_humain);
+		return TRUE;
+	}
+	case WM_COMMAND:
+		if (HIWORD(wParam) == BN_CLICKED) {
+			switch (LOWORD(wParam)) {
+			case ID_ZERO_LEADER:
+				nb_leader = 0;
+				break;
+			case ID_ONE_LEADER:
+				nb_leader = 1;
+				break;
+			case ID_TWO_LEADER:
+				nb_leader = 2;
+				break;
+			case ID_HUMAN_AGENT:
+				agent_humain = 1;
+				break;
+			case ID_NOT_HUMAN_AGENT:
+				agent_humain = 0;
+				break;
+			}
+			InvalidateRect(hDlg, NULL, TRUE);
+		}
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, 0);
+			return TRUE;
+		}
+	default:
+		return FALSE;
+	}
+}
+
+
+
+
 
 //-------------------------------- WinMain -------------------------------
 //

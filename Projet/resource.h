@@ -19,6 +19,17 @@
 #define ID_MENU_SMOOTHING               40014
 #define IDM_PARTITION_VIEW_NEIGHBORS    40015
 
+// -- Boite de dialogue parametrage -- //
+#define ID_ZERO_LEADER					1001
+#define ID_ONE_LEADER					1002
+#define ID_TWO_LEADER					1003
+
+#define ID_HUMAN_AGENT					1004
+#define ID_NOT_HUMAN_AGENT				1005
+
+#define ID_NB_AGENT_FOLLOWER			1006
+#define ID_OFFSET						1007
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
