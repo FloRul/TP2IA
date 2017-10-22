@@ -140,10 +140,10 @@
     <ClInclude Include="Bird.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FollowerAgents.h">
+    <ClInclude Include="LeaderAgent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LeaderAgent.h">
+    <ClInclude Include="FollowerAgents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

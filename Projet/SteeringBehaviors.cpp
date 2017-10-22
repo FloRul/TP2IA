@@ -1509,12 +1509,10 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
 //for receiving keyboard input from user
 
 
-Vector2D SteeringBehavior::FollowLeaderWithOffset(
-	const LeaderAgent* leader, 
-	const std::vector<FollowerAgents*> &fAgents) 
+Vector2D SteeringBehavior::FollowLeaderWithOffset(const FollowerAgents* leader) 
 {
 
-
+	return Vector2D();
 }
 
 
