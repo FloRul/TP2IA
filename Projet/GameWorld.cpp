@@ -67,9 +67,9 @@ GameWorld::GameWorld(int cx, int cy):
                                     Prm.MaxTurnRatePerSecond, //max turn rate
                                     Prm.VehicleScale);        //scale
 
-    //pVehicle->Steering()->FlockingOn();
+    pVehicle->Steering()->WanderOn();
 	// Test
-	pVehicle->Steering()->FlockingVOn();
+	//pVehicle->Steering()->FlockingVOn();
 
     m_Vehicles.push_back(pVehicle);
 
@@ -81,6 +81,7 @@ GameWorld::GameWorld(int cx, int cy):
 
 #define SHOAL
 #ifdef SHOAL
+  /*
   m_Vehicles[Prm.NumAgents-1]->Steering()->FlockingOff();
   m_Vehicles[Prm.NumAgents-1]->SetScale(Vector2D(10, 10));
   m_Vehicles[Prm.NumAgents-1]->Steering()->WanderOn();
@@ -92,6 +93,7 @@ GameWorld::GameWorld(int cx, int cy):
     m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[Prm.NumAgents-1]);
 
   }
+  */
 #endif
  
   //create any obstacles or walls
