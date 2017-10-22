@@ -54,6 +54,9 @@
     <ClCompile Include="..\Common\misc\WindowUtils.cpp">
       <Filter>misc</Filter>
     </ClCompile>
+    <ClCompile Include="FollowerAgents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseGameEntity.h">
@@ -131,10 +134,10 @@
     <ClInclude Include="..\Common\misc\WindowUtils.h">
       <Filter>misc</Filter>
     </ClInclude>
-    <ClInclude Include="LeaderFollowingAgent.h">
+    <ClInclude Include="Bird.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Bird.h">
+    <ClInclude Include="FollowerAgents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
