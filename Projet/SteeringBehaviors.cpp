@@ -261,13 +261,6 @@ Vector2D SteeringBehavior::CalculatePrioritized()
       if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
     }
 
-	if (On(flocking_v))
-	{
-		force = FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
-
-		if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
-	}
-
   }
   else
   {
@@ -292,6 +285,13 @@ Vector2D SteeringBehavior::CalculatePrioritized()
 
       if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
     }
+  }
+
+  if (On(flocking_v))
+  {
+	  force = FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
+
+	  if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
   }
 
   if (On(follow_path))
@@ -1458,12 +1458,12 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
 //-----------------------------------------------------------------------------
 Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 {
-	Vehicle* NearestAgent;
 	Vector2D SteeringForce;
+	Vehicle* NearestAgent;
 	Vector2D ShortestVector = Vector2D(0, 0);
 
 	// get the near by agent
-	for (unsigned int a = 0; a<neighbors.size(); ++a)
+	for (unsigned int a = 0; a < neighbors.size(); ++a)
 	{
 		//make sure this agent isn't included in the calculations
 		if (neighbors[a] != m_pVehicle)
@@ -1481,11 +1481,11 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 			}
 		}
 	}
-
+	int t = ShortestVector.Length();
 	// analyse if the agent is far away from his neighbors
-	if (ShortestVector.Length() > 50)
+	if (ShortestVector.Length() > 40)
 	{
-		SteeringForce = Evade(NearestAgent);
+		SteeringForce = Arrive(NearestAgent);
 		// get the near by agent to arrive to him
 		return SteeringForce;
 	} 
@@ -1500,9 +1500,24 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 //  Produces a steering force that make agents move to the side 
 //  if they are near an agent
 //------------------------------------------------------------------------
-Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &agents)
+Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &neighbors)
 {
-	// TODO
+	//Vector2D SteeringForce;
+
+	//for (unsigned int a = 0; a < neighbors.size(); ++a)
+	//{
+	//	//make sure this agent isn't included in the calculations and that
+	//	//the agent being examined is close enough. ***also make sure it is 
+	//	//in front of the current agent
+	//	if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
+	//	{
+	//		Vector2D ToAgent = m_pVehicle->Pos() - neighbors[a]->Pos();
+
+	//		//scale the force inversely proportional to the agents distance  
+	//		//from its neighbor.
+	//		SteeringForce += Vec2DNormalize(ToAgent) / ToAgent.Length();
+	//	}
+	//}
 	return Vector2D(0,0);
 }
 
@@ -1511,10 +1526,39 @@ Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &agents)
 //  Produces a steering force that make agents decelerate if they are too
 //  close to another agent.
 //-----------------------------------------------------------------------------
-Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
+Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 {
-	// TODO
-	return Vector2D(0,0);
+	Vector2D SteeringForce;
+	bool found = false;
+	int a = 0;
+	while (a < neighbors.size() && !found)
+	{
+		//make sure this agent isn't included in the calculations and that
+		//the agent being examined is close enough.
+		if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
+		{
+			Vector2D ToAgent = neighbors[a]->Pos() - m_pVehicle->Pos();
+
+			//test if the agent is too close to the current agent
+			if (ToAgent.Length() < 20) {
+				//scale the force inversely proportional to the agents distance  
+				//from its neighbor.
+				SteeringForce = Vec2DNormalize(ToAgent) / (0.1*ToAgent.Length());
+
+				// allow to exit the loop
+				found = true;
+			}
+		}
+		++a;
+	}
+	if (found)
+	{
+		return SteeringForce;
+	}
+	else
+	{
+		return Vector2D(0, 0);
+	}
 }
 
 
@@ -1545,7 +1589,7 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 	else
 	{
 		// Appliquer une pondération surement aprés tests successifs.
-		return rule1 + rule2 + rule3;
+		return rule1;//+ rule2 + rule3;
 	}
 }
 

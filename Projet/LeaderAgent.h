@@ -11,10 +11,11 @@
 class GameWorld;
 class SteeringBehavior;
 
-class LeaderAgent :
-	public Vehicle
+class LeaderAgent : public Vehicle
 {
+
 public:
+
 	LeaderAgent(GameWorld* world,
 		Vector2D position,
 		double    rotation,
@@ -25,5 +26,11 @@ public:
 		double    max_turn_rate,
 		double    scale);
 	~LeaderAgent();
+
+	//updates the vehicle's position and orientation
+	void        Update(double time_elapsed);
+
+	void        Render();
+
 };
 

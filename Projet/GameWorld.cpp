@@ -145,7 +145,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.VehicleScale);        //scale
 
 				// FlokingV behavior
-				pVehicle->Steering()->FlockingVOn(); break;
+				pVehicle->Steering()->FlockingVOn();
+				break;
 			}
 			default:
 				pVehicle->Steering()->WanderOn();
@@ -196,6 +197,11 @@ GameWorld::~GameWorld()
   for (unsigned int a=0; a<m_Vehicles.size(); ++a)
   {
     delete m_Vehicles[a];
+  }
+
+  for (unsigned int a = 0; a<m_Leaders.size(); ++a)
+  {
+	  delete m_Leaders[a];
   }
 
   for (unsigned int ob=0; ob<m_Obstacles.size(); ++ob)

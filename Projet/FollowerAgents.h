@@ -29,5 +29,11 @@ public:
 		double    scale,
 		Vehicle* leaderf);
 	~FollowerAgents();
+
+	//updates the vehicle's position and orientation
+	void        Update(double time_elapsed);
+
+	void        Render();
+
 };
 

@@ -39,5 +39,62 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 
 
 FollowerAgents::~FollowerAgents()
+{ }
+
+//-------------------------------- Render -------------------------------------
+//-----------------------------------------------------------------------------
+void FollowerAgents::Render()
 {
+	//a vector to hold the transformed vertices
+	static std::vector<Vector2D>  m_vecVehicleVBTrans;
+
+	//render neighboring vehicles in different colors if requested
+	if (m_pWorld->RenderNeighbors())
+	{
+		if (ID() == 0) gdi->RedPen();
+		else if (IsTagged()) gdi->GreenPen();
+		else gdi->BluePen();
+	}
+
+	else
+	{
+		gdi->RedPen();
+	}
+
+	if (Steering()->isInterposeOn())
+	{
+		gdi->RedPen();
+	}
+
+	if (Steering()->isHideOn())
+	{
+		gdi->GreenPen();
+	}
+
+	if (isSmoothingOn())
+	{
+		m_vecVehicleVBTrans = WorldTransform(m_vecVehicleVB,
+			Pos(),
+			SmoothedHeading(),
+			SmoothedHeading().Perp(),
+			Scale());
+	}
+
+	else
+	{
+		m_vecVehicleVBTrans = WorldTransform(m_vecVehicleVB,
+			Pos(),
+			Heading(),
+			Side(),
+			Scale());
+	}
+
+
+	gdi->ClosedShape(m_vecVehicleVBTrans);
+
+	//render any visual aids / and or user options
+	if (m_pWorld->ViewKeys())
+	{
+		Steering()->RenderAids();
+	}
 }
