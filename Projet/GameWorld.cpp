@@ -133,6 +133,17 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			}
 			case 2:
 			{
+				// Create the agent
+				pVehicle = new Vehicle(this,
+					SpawnPos,                 //initial position
+					RandFloat()*TwoPi,        //start rotation
+					Vector2D(0, 0),            //velocity
+					Prm.VehicleMass,          //mass
+					Prm.MaxSteeringForce,     //max force
+					Prm.MaxSpeed,             //max velocity
+					Prm.MaxTurnRatePerSecond, //max turn rate
+					Prm.VehicleScale);        //scale
+
 				// FlokingV behavior
 				pVehicle->Steering()->FlockingVOn(); break;
 			}

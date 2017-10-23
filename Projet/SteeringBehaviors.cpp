@@ -94,8 +94,7 @@ Vector2D SteeringBehavior::Calculate()
   if (!isSpacePartitioningOn())
   {
     //tag neighbors if any of the following 3 group behaviors are switched on
-    if (On(separation) || On(allignment) || On(cohesion) ||
-		On(cohesionV) || On(offset_vision) || On(slow_down))
+    if (On(separation) || On(allignment) || On(cohesion) || On(flocking_v))
     {
       m_pVehicle->World()->TagVehiclesWithinViewRange(m_pVehicle, m_dViewDistance);
     }
@@ -104,8 +103,7 @@ Vector2D SteeringBehavior::Calculate()
   {
     //calculate neighbours in cell-space if any of the following 3 group
     //behaviors are switched on
-    if (On(separation) || On(allignment) || On(cohesion) ||
-		On(cohesionV) || On(offset_vision) || On(slow_down))
+    if (On(separation) || On(allignment) || On(cohesion) || On(flocking_v))
     {
       m_pVehicle->World()->CellSpace()->CalculateNeighbors(m_pVehicle->Pos(), m_dViewDistance);
     }
@@ -266,6 +264,12 @@ Vector2D SteeringBehavior::CalculatePrioritized()
 
   else
   {
+	if (On(flocking_v))
+	{
+		force = FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
+
+		if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
+	}
 
     if (On(separation))
     {
@@ -287,6 +291,13 @@ Vector2D SteeringBehavior::CalculatePrioritized()
 
       if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
     }
+  }
+
+  if (On(follow_path))
+  {
+	  force = FollowPath() * m_dWeightFollowPath;
+
+	  if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
   }
 
   if (On(seek))
@@ -1446,11 +1457,35 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
 //-----------------------------------------------------------------------------
 Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 {
-	// analyse if the agent is far away from his neighbors
-	if (neighbors.size() == 0)
+	Vector2D NearestAgent, SteeringForce;
+
+	// get the near by agent
+	for (unsigned int a = 0; a<neighbors.size(); ++a)
 	{
+		Vector2D ShortestVector = Vector2D(0,0);
+
+		//make sure this agent isn't included in the calculations
+		if (neighbors[a] != m_pVehicle)
+		{
+			Vector2D ToAgent = m_pVehicle->Pos() - neighbors[a]->Pos();
+
+			if (ToAgent == Vector2D(0, 0) || ToAgent.Length() <= ShortestVector.Length())
+			{
+				// Save the position of the nearest agent
+				NearestAgent = m_pVehicle->Pos();
+				//scale the force inversely proportional to the agents distance  
+				//from its neighbor.
+				//SteeringForce = Vec2DNormalize(ToAgent) * ToAgent.Length();
+			}
+		}
+	}
+
+	// analyse if the agent is far away from his neighbors
+	if (neighbors.size() == 0 || NearestAgent.Length() > 3)
+	{
+		SteeringForce = Seek(NearestAgent);
 		// get the near by agent to arrive to him
-		return Vector2D(5,5);
+		return Vec2DNormalize(SteeringForce);;
 	} 
 	else
 	{
@@ -1486,31 +1521,31 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &agents)
 //  Produces a steering force that imitate the behavior of wild birds
 //  based on 4 rules
 //----------------------------------------------------------------------
-//Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
-//{
-//	// Call rule n°1
-//	Vector2D rule1 = CohesionV(neighbors);
-//
-//	// Call rule n°2
-//	Vector2D rule2 = OffsetVision(neighbors);
-//
-//	// Call rule n°3
-//	Vector2D rule3 = SlowDown(neighbors);
-//
-//	// if all the previous conditions are fill,
-//	// the agent adapt his speed and heading with his neighborhood
-//	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
-//		rule3 == Vector2D(0,0))
-//	{
-//		// Adapter la speed + heading ici
-//		return;
-//	}
-//	else
-//	{
-//		// Appliquer une pondération surement aprés tests successifs.
-//		return rule1 + rule2 + rule3;
-//	}
-//}
+Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
+{
+	Vector2D SteeringForce;
+
+	// Call rule n°1
+	Vector2D rule1 = CohesionV(neighbors);
+	// Call rule n°2
+	Vector2D rule2 = OffsetVision(neighbors);
+	// Call rule n°3
+	Vector2D rule3 = SlowDown(neighbors);
+
+	// if all the previous conditions are fill,
+	// the agent adapt his speed and heading with his neighborhood
+	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
+		rule3 == Vector2D(0,0))
+	{
+		// Adapter la speed + heading ici
+		return rule1;
+	}
+	else
+	{
+		// Appliquer une pondération surement aprés tests successifs.
+		return rule1 + rule2 + rule3;
+	}
+}
 
 
 

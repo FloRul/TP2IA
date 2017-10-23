@@ -75,7 +75,7 @@ private:
 		offset_pursuit = 0x10000,
 
 		// -- Flocking V -- //
-		cohesionV = 0x20000,
+		flocking_v = 0x20000,
 		offset_vision = 0x40000,
 		slow_down = 0x80000,
 	};
@@ -139,9 +139,10 @@ private:
 	double        m_dWeightFollowPath;
 
 	// -- Flocking V -- //
-	double		m_dWeightCohesionV;
-	double		m_dWeightOffsetVision;
-	double		m_dWeightSlowDown;
+	//double		m_dWeightCohesionV;
+	//double		m_dWeightOffsetVision;
+	//double		m_dWeightSlowDown;
+	double			m_dWeightFlockingV;
 
 	//how far the agent can 'see'
 	double        m_dViewDistance;
@@ -256,6 +257,7 @@ private:
 	Vector2D CohesionV(const std::vector<Vehicle*> &agents);
 	Vector2D OffsetVision(const std::vector<Vehicle*> &agents);
 	Vector2D SlowDown(const std::vector<Vehicle*> &agents);
+	Vector2D FlockingV(const std::vector<Vehicle*> &agents);
 
 
 	//the following three are the same as above but they use cell-space
@@ -352,10 +354,10 @@ public:
 	void FlockingOn() { CohesionOn(); AlignmentOn(); SeparationOn(); WanderOn(); }
 
 	// -- Flocking V -- //
-	void CohesionVOn() { m_iFlags |= cohesionV; }
-	void OffsetVisionOn() { m_iFlags |= offset_vision; }
-	void SlowDownOn(){m_iFlags |= slow_down;}
-	void FlockingVOn() {CohesionVOn(); OffsetVisionOn(); SlowDownOn();}
+	//void CohesionVOn() { m_iFlags |= cohesionV; }
+	//void OffsetVisionOn() { m_iFlags |= offset_vision; }
+	//void SlowDownOn(){m_iFlags |= slow_down;}
+	void FlockingVOn() { m_iFlags |= flocking_v; }
 
   void FleeOff()  {if(On(flee))   m_iFlags ^=flee;}
   void SeekOff()  {if(On(seek))   m_iFlags ^=seek;}
@@ -375,10 +377,10 @@ public:
   void FlockingOff(){CohesionOff(); AlignmentOff(); SeparationOff(); WanderOff();}
 
   // -- Flocking V -- //
-  void CohesionVOff() { if(On(cohesionV)) m_iFlags ^= cohesionV; }
-  void OffsetVisionOff() { if(On(offset_vision)) m_iFlags ^= offset_vision; }
-  void SlowDownOff() { if(On(slow_down)) m_iFlags ^= slow_down; }
-  void FlockingVOff() { CohesionVOff(); OffsetVisionOff(); SlowDownOff(); }
+  //void CohesionVOff() { if(On(cohesionV)) m_iFlags ^= cohesionV; }
+  //void OffsetVisionOff() { if(On(offset_vision)) m_iFlags ^= offset_vision; }
+  //void SlowDownOff() { if(On(slow_down)) m_iFlags ^= slow_down; }
+  void FlockingVOff() { if (On(flocking_v)) m_iFlags ^= flocking_v; }
 
   bool isFleeOn(){return On(flee);}
   bool isSeekOn(){return On(seek);}
@@ -397,9 +399,11 @@ public:
   bool isOffsetPursuitOn(){return On(offset_pursuit);}
 
   // -- Flocking V -- //
-  bool isCohesionVOn() { return On(cohesionV); }
-  bool isOffsetVisionOn() { return On(offset_vision); }
-  bool isSlowDownOn(){ return On(slow_down); }
+  //bool isCohesionVOn() { return On(cohesionV); }
+  //bool isOffsetVisionOn() { return On(offset_vision); }
+  //bool isSlowDownOn(){ return On(slow_down); }
+  bool isFlockingVOn() { return On(flocking_v);
+  }
 
   double DBoxLength()const{return m_dDBoxLength;}
   const std::vector<Vector2D>& GetFeelers()const{return m_Feelers;}
@@ -413,9 +417,10 @@ public:
   double CohesionWeight()const{return m_dWeightCohesion;}
 
   // -- Flocking V -- //
-  double CohesionVWeight()const{ return m_dWeightCohesionV; }
-  double OffsetVisionWeight()const{ return m_dWeightOffsetVision; }
-  double SlowDownWeight()const{ return m_dWeightSlowDown; }
+  //double CohesionVWeight()const{ return m_dWeightCohesionV; }
+  //double OffsetVisionWeight()const{ return m_dWeightOffsetVision; }
+  //double SlowDownWeight()const{ return m_dWeightSlowDown; }
+  double FlockingVWeight()const { return m_dWeightFlockingV; }
 
 };
 
