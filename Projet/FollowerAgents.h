@@ -15,6 +15,8 @@ class SteeringBehavior;
 class FollowerAgents :
 	public Vehicle
 {
+private : 
+	Vehicle* leader;
 public:
 	FollowerAgents(GameWorld* world,
 		Vector2D position,
@@ -24,7 +26,8 @@ public:
 		double    max_force,
 		double    max_speed,
 		double    max_turn_rate,
-		double    scale);
+		double    scale,
+		Vehicle* leaderf);
 	~FollowerAgents();
 };
 

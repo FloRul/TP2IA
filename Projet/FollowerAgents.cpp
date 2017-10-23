@@ -1,4 +1,4 @@
-
+#include "Vehicle.h"
 #include "FollowerAgents.h"
 #include "2d/C2DMatrix.h"
 #include "2d/Geometry.h"
@@ -16,7 +16,8 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 	double    max_force,
 	double    max_speed,
 	double    max_turn_rate,
-	double    scale):
+	double    scale,
+	Vehicle* leaderf):
 	Vehicle(world,
 		position,
 		rotation,
@@ -27,8 +28,11 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 		max_turn_rate,
 		scale)
 {
+	this->leader = leaderf;
 	//Designe le comportement
-	//this->Steering()->
+	//this->Steering()->ArriveOn();
+	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(2, 0));
+	this->Steering()->SeparationOn();
 }
 
 

@@ -1,5 +1,7 @@
 #include "GameWorld.h"
 #include "Vehicle.h"
+#include "LeaderAgent.h"
+#include "FollowerAgents.h"
 #include "constants.h"
 #include "Obstacle.h"
 #include "2d/Geometry.h"
@@ -49,6 +51,47 @@ GameWorld::GameWorld(int cx, int cy):
   m_pPath = new Path(5, border, border, cx-border, cy-border, true); 
 
   //setup the agents
+  //custom setup
+  Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,cy / 2.0 + RandomClamped()*cy / 2.0);
+  LeaderAgent* firstLeader = new LeaderAgent(
+	  this,
+	  SpawnPos,                 //initial position
+	  RandFloat()*TwoPi,        //start rotation
+	  Vector2D(0, 0),            //velocity
+	  Prm.VehicleMass,          //mass
+	  Prm.MaxSteeringForce,     //max force
+	  Prm.MaxSpeed,             //max velocity
+	  Prm.MaxTurnRatePerSecond, //max turn rate
+	  Prm.VehicleScale);
+
+  firstLeader->Steering()->WanderOn();
+  m_Vehicles.push_back(firstLeader);
+  m_pCellSpace->AddEntity(firstLeader);
+
+  for (int a = 0; a < Prm.NumAgents; a++) {
+	  //determine a random starting position
+	  Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+		  cy / 2.0 + RandomClamped()*cy / 2.0);
+
+
+	  FollowerAgents* fAgent = new FollowerAgents(this,
+		  SpawnPos,                 //initial position
+		  RandFloat()*TwoPi,        //start rotation
+		  Vector2D(0, 0),            //velocity
+		  Prm.VehicleMass,          //mass
+		  Prm.MaxSteeringForce,     //max force
+		  Prm.MaxSpeed,             //max velocity
+		  Prm.MaxTurnRatePerSecond, //max turn rate
+		  Prm.VehicleScale,			//scale
+		  firstLeader);				//the leader of the follower     
+	  
+		  m_Vehicles.push_back(fAgent);
+
+		  //add it to the cell subdivision
+		  m_pCellSpace->AddEntity(fAgent);
+  }
+  //////////////
+  /*
   for (int a=0; a<Prm.NumAgents; ++a)
   {
 
@@ -70,11 +113,11 @@ GameWorld::GameWorld(int cx, int cy):
     pVehicle->Steering()->WanderOn();
 	// Test
 	//pVehicle->Steering()->FlockingVOn();
-
-    m_Vehicles.push_back(pVehicle);
+	*/
+    //m_Vehicles.push_back(pVehicle);
 
     //add it to the cell subdivision
-    m_pCellSpace->AddEntity(pVehicle);
+    //m_pCellSpace->AddEntity(pVehicle);
   }
 
   // TODO faire des ifs dependant des resultats des menus déroulants
@@ -99,7 +142,7 @@ GameWorld::GameWorld(int cx, int cy):
   //create any obstacles or walls
   //CreateObstacles();
   //CreateWalls();
-}
+//}
 
 
 //-------------------------------- dtor ----------------------------------
