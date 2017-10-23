@@ -21,86 +21,118 @@ using std::list;
 
 //------------------------------- ctor -----------------------------------
 //------------------------------------------------------------------------
-GameWorld::GameWorld(int cx, int cy):
-
-            m_cxClient(cx),
-            m_cyClient(cy),
-            m_bPaused(false),
-            m_vCrosshair(Vector2D(cxClient()/2.0, cxClient()/2.0)),
-            m_bShowWalls(false),
-            m_bShowObstacles(false),
-            m_bShowPath(false),
-            m_bShowWanderCircle(false),
-            m_bShowSteeringForce(false),
-            m_bShowFeelers(false),
-            m_bShowDetectionBox(false),
-            m_bShowFPS(true),
-            m_dAvFrameTime(0),
-            m_pPath(NULL),
-            m_bRenderNeighbors(false),
-            m_bViewKeys(false),
-            m_bShowCellSpaceInfo(false)
+GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
+	int comportement, int nb_poursuiveur, int offset) :
+				
+				m_cxClient(cx),
+				m_cyClient(cy),
+				m_bPaused(false),
+				m_vCrosshair(Vector2D(cxClient() / 2.0, cxClient() / 2.0)),
+				m_bShowWalls(false),
+				m_bShowObstacles(false),
+				m_bShowPath(false),
+				m_bShowWanderCircle(false),
+				m_bShowSteeringForce(false),
+				m_bShowFeelers(false),
+				m_bShowDetectionBox(false),
+				m_bShowFPS(true),
+				m_dAvFrameTime(0),
+				m_pPath(NULL),
+				m_bRenderNeighbors(false),
+				m_bViewKeys(false),
+				m_bShowCellSpaceInfo(false)
 {
+	// Create local variable
+	int nb_agents = nb_poursuiveur + agent_humain + nb_leader;
 
-  //setup the spatial subdivision class
-  m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, Prm.NumAgents);
+	//setup the spatial subdivision class
+	m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, nb_agents);
 
-  double border = 30;
-  m_pPath = new Path(5, border, border, cx-border, cy-border, true); 
+	double border = 30;
+	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 
-  //setup the agents
-  for (int a=0; a<Prm.NumAgents; ++a)
-  {
+	//setup the agents
+	for (int a = 0; a<nb_agents; ++a)
+	{
 
-    //determine a random starting position
-    Vector2D SpawnPos = Vector2D(cx/2.0+RandomClamped()*cx/2.0,
-                                 cy/2.0+RandomClamped()*cy/2.0);
+		//determine a random starting position
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
 
 
-    Vehicle* pVehicle = new Vehicle(this,
-                                    SpawnPos,                 //initial position
-                                    RandFloat()*TwoPi,        //start rotation
-                                    Vector2D(0,0),            //velocity
-                                    Prm.VehicleMass,          //mass
-                                    Prm.MaxSteeringForce,     //max force
-                                    Prm.MaxSpeed,             //max velocity
-                                    Prm.MaxTurnRatePerSecond, //max turn rate
-                                    Prm.VehicleScale);        //scale
+		Vehicle* pVehicle = new Vehicle(this,
+			SpawnPos,                 //initial position
+			RandFloat()*TwoPi,        //start rotation
+			Vector2D(0, 0),            //velocity
+			Prm.VehicleMass,          //mass
+			Prm.MaxSteeringForce,     //max force
+			Prm.MaxSpeed,             //max velocity
+			Prm.MaxTurnRatePerSecond, //max turn rate
+			Prm.VehicleScale);        //scale
 
-    pVehicle->Steering()->WanderOn();
-	// Test
-	//pVehicle->Steering()->FlockingVOn();
+		switch (comportement)
+		{
+			case 0:
+			{
+				pVehicle->Steering()->WanderOn(); break;
+			}
+			case 1:
+			{
+				break;
+			}
+			case 2:
+			{
+				pVehicle->Steering()->FlockingVOn(); break;
+			}
+			default:
+				pVehicle->Steering()->WanderOn();
+		}
 
-    m_Vehicles.push_back(pVehicle);
+		m_Vehicles.push_back(pVehicle);
 
-    //add it to the cell subdivision
-    m_pCellSpace->AddEntity(pVehicle);
-  }
-
-  // TODO faire des ifs dependant des resultats des menus déroulants
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pVehicle);
+	}
 
 #define SHOAL
 #ifdef SHOAL
-  /*
-  m_Vehicles[Prm.NumAgents-1]->Steering()->FlockingOff();
-  m_Vehicles[Prm.NumAgents-1]->SetScale(Vector2D(10, 10));
-  m_Vehicles[Prm.NumAgents-1]->Steering()->WanderOn();
-  m_Vehicles[Prm.NumAgents-1]->SetMaxSpeed(70);
-
-
-   for (int i=0; i<Prm.NumAgents-1; ++i)
-  {
-    m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[Prm.NumAgents-1]);
-
-  }
-  */
+//	switch (comportement)
+//	{
+//	case 0:
+//	{
+//		m_Vehicles[nb_agents-1]->Steering()->FlockingOff();
+//		m_Vehicles[nb_agents-1]->SetScale(Vector2D(10, 10));
+//		m_Vehicles[nb_agents-1]->Steering()->WanderOn();
+//		m_Vehicles[nb_agents-1]->SetMaxSpeed(70);
+//
+//		for (int i=0; i<nb_agents-1; ++i)
+//		{
+//			m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[nb_agents-1]);
+//		}
+//		break;
+//	}
+//	case 1:
+//	{
+//		break;
+//	}
+//	case 2:
+//	{
+//		break;
+//	}
+//	default:
+//		break;
+//	}
 #endif
- 
-  //create any obstacles or walls
-  //CreateObstacles();
-  //CreateWalls();
+
+	//create any obstacles or walls
+	//CreateObstacles();
+	//CreateWalls();
+
 }
 
+GameWorld::GameWorld(int cx, int cy):
+	GameWorld(cx, cy, 0, 0, 0, Prm.NumAgents, 15)
+{}
 
 //-------------------------------- dtor ----------------------------------
 //------------------------------------------------------------------------

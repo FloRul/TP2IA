@@ -30,6 +30,8 @@
 #define ID_NB_AGENT_FOLLOWER			1006
 #define ID_OFFSET						1007
 
+#define ID_CB							2001
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
