@@ -260,16 +260,17 @@ Vector2D SteeringBehavior::CalculatePrioritized()
 
       if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
     }
-  }
 
-  else
-  {
 	if (On(flocking_v))
 	{
 		force = FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
 
 		if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
 	}
+
+  }
+  else
+  {
 
     if (On(separation))
     {
@@ -1457,22 +1458,23 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
 //-----------------------------------------------------------------------------
 Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 {
-	Vector2D NearestAgent, SteeringForce;
+	Vehicle* NearestAgent;
+	Vector2D SteeringForce;
+	Vector2D ShortestVector = Vector2D(0, 0);
 
 	// get the near by agent
 	for (unsigned int a = 0; a<neighbors.size(); ++a)
 	{
-		Vector2D ShortestVector = Vector2D(0,0);
-
 		//make sure this agent isn't included in the calculations
 		if (neighbors[a] != m_pVehicle)
 		{
 			Vector2D ToAgent = m_pVehicle->Pos() - neighbors[a]->Pos();
 
-			if (ToAgent == Vector2D(0, 0) || ToAgent.Length() <= ShortestVector.Length())
+			if (ShortestVector == Vector2D(0, 0) || ToAgent.Length() < ShortestVector.Length())
 			{
 				// Save the position of the nearest agent
-				NearestAgent = m_pVehicle->Pos();
+				NearestAgent = neighbors[a];
+				ShortestVector = ToAgent;
 				//scale the force inversely proportional to the agents distance  
 				//from its neighbor.
 				//SteeringForce = Vec2DNormalize(ToAgent) * ToAgent.Length();
@@ -1481,11 +1483,11 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 	}
 
 	// analyse if the agent is far away from his neighbors
-	if (neighbors.size() == 0 || NearestAgent.Length() > 3)
+	if (ShortestVector.Length() > 50)
 	{
-		SteeringForce = Seek(NearestAgent);
+		SteeringForce = Evade(NearestAgent);
 		// get the near by agent to arrive to him
-		return Vec2DNormalize(SteeringForce);;
+		return SteeringForce;
 	} 
 	else
 	{
