@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <time.h>
+#include <string.h>
 
 #include "constants.h"
 #include "misc/utils.h"
@@ -101,7 +102,7 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
          ReleaseDC(hwnd, hdc); 
 		 if (comportement == 0)
 		 {
-			 g_GameWorld = new GameWorld(cxClient, cyClient);
+			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, 0, 0, nb_poursuiveur, offset);
 		 }
 		 else
 		 {
@@ -234,6 +235,11 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// Settings des boutons radio
 		CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
 		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_CHECKED);
+
+		// Settings default values for int
+		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER, std::to_string(Prm.NumAgents).c_str());
+		SetDlgItemText(hDlg, ID_OFFSET, "10");
+
 		return TRUE;
 	}
 	case WM_COMMAND:
