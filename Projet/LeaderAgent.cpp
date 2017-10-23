@@ -29,6 +29,11 @@ LeaderAgent::LeaderAgent(GameWorld* world,
 LeaderAgent::~LeaderAgent()
 { }
 
+void LeaderAgent::Update(double time_elapsed)
+{
+
+}
+
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
 void LeaderAgent::Render()
@@ -46,7 +51,7 @@ void LeaderAgent::Render()
 
 	else
 	{
-		gdi->GreenPen();
+		gdi->RedPen();
 	}
 
 	if (Steering()->isInterposeOn())

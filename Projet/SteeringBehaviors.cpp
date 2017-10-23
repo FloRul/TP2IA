@@ -1485,7 +1485,7 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 	// analyse if the agent is far away from his neighbors
 	if (ShortestVector.Length() > 40)
 	{
-		SteeringForce = Arrive(NearestAgent);
+		SteeringForce = Evade(NearestAgent);
 		// get the near by agent to arrive to him
 		return SteeringForce;
 	} 

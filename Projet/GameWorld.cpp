@@ -227,6 +227,7 @@ void GameWorld::Update(double time_elapsed)
 
   m_dAvFrameTime = FrameRateSmoother.Update(time_elapsed);
   
+  // TODO update leaders
 
   //update the vehicles
   for (unsigned int a=0; a<m_Vehicles.size(); ++a)

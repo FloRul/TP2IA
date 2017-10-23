@@ -41,6 +41,13 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 FollowerAgents::~FollowerAgents()
 { }
 
+
+void FollowerAgents::Update(double time_elapsed)
+{
+
+}
+
+
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
 void FollowerAgents::Render()
@@ -58,7 +65,7 @@ void FollowerAgents::Render()
 
 	else
 	{
-		gdi->RedPen();
+		gdi->GreenPen();
 	}
 
 	if (Steering()->isInterposeOn())
