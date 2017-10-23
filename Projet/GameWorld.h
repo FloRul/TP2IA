@@ -35,8 +35,11 @@ class GameWorld
 { 
 private:
 
-  //a container of all the moving entities
+  //a container of all the moving entities except leaders
   std::vector<Vehicle*>         m_Vehicles;
+
+  //a container of all the leaders
+  std::vector<Vehicle*>         m_Leaders;
 
   //any obstacles
   std::vector<BaseGameEntity*>  m_Obstacles;

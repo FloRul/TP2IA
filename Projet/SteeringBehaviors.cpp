@@ -1446,8 +1446,16 @@ Vector2D SteeringBehavior::OffsetPursuit(const Vehicle*  leader,
 //-----------------------------------------------------------------------------
 Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 {
-	// TODO
-	return Vector2D(0,0);
+	// analyse if the agent is far away from his neighbors
+	if (neighbors.size() == 0)
+	{
+		// get the near by agent to arrive to him
+		return Vector2D(5,5);
+	} 
+	else
+	{
+		return Vector2D(0,0);
+	}
 }
 
 //-------------------------  OffsetVision  -------------------------------

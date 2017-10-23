@@ -44,8 +44,6 @@ const double WanderJitterPerSec = 80.0;
 //used in path following
 const double WaypointSeekDist   = 20;                                          
 
-
-
 //------------------------------------------------------------------------
 
 class SteeringBehavior

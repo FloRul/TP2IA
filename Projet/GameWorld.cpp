@@ -13,6 +13,8 @@
 #include "ParamLoader.h"
 #include "misc/WindowUtils.h"
 #include "misc/Stream_Utility_Functions.h"
+#include "FollowerAgents.h"
+#include "LeaderAgent.h"
 
 
 #include "resource.h"
@@ -23,127 +25,158 @@ using std::list;
 
 //------------------------------- ctor -----------------------------------
 //------------------------------------------------------------------------
-GameWorld::GameWorld(int cx, int cy):
-
-            m_cxClient(cx),
-            m_cyClient(cy),
-            m_bPaused(false),
-            m_vCrosshair(Vector2D(cxClient()/2.0, cxClient()/2.0)),
-            m_bShowWalls(false),
-            m_bShowObstacles(false),
-            m_bShowPath(false),
-            m_bShowWanderCircle(false),
-            m_bShowSteeringForce(false),
-            m_bShowFeelers(false),
-            m_bShowDetectionBox(false),
-            m_bShowFPS(true),
-            m_dAvFrameTime(0),
-            m_pPath(NULL),
-            m_bRenderNeighbors(false),
-            m_bViewKeys(false),
-            m_bShowCellSpaceInfo(false)
+GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
+	int comportement, int nb_poursuiveurs, int offset) :
+				
+				m_cxClient(cx),
+				m_cyClient(cy),
+				m_bPaused(false),
+				m_vCrosshair(Vector2D(cxClient() / 2.0, cxClient() / 2.0)),
+				m_bShowWalls(false),
+				m_bShowObstacles(false),
+				m_bShowPath(false),
+				m_bShowWanderCircle(false),
+				m_bShowSteeringForce(false),
+				m_bShowFeelers(false),
+				m_bShowDetectionBox(false),
+				m_bShowFPS(true),
+				m_dAvFrameTime(0),
+				m_pPath(NULL),
+				m_bRenderNeighbors(false),
+				m_bViewKeys(false),
+				m_bShowCellSpaceInfo(false)
 {
+	// Create local variable
+	int nb_agents = nb_poursuiveurs + agent_humain + nb_leader;
 
-  //setup the spatial subdivision class
-  m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, Prm.NumAgents);
+	//setup the spatial subdivision class
+	m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, nb_agents);
 
-  double border = 30;
-  m_pPath = new Path(5, border, border, cx-border, cy-border, true); 
+	double border = 30;
+	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 
-  //setup the agents
-  //custom setup
-  Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,cy / 2.0 + RandomClamped()*cy / 2.0);
-  LeaderAgent* firstLeader = new LeaderAgent(
-	  this,
-	  SpawnPos,                 //initial position
-	  RandFloat()*TwoPi,        //start rotation
-	  Vector2D(0, 0),            //velocity
-	  Prm.VehicleMass,          //mass
-	  Prm.MaxSteeringForce,     //max force
-	  Prm.MaxSpeed,             //max velocity
-	  Prm.MaxTurnRatePerSecond, //max turn rate
-	  Prm.VehicleScale);
+	if(comportement != 0)
+	{
+		// setup leaders agents
+		for (int a = 0; a < nb_leader; ++a)
+		{
+			//determine a random starting position
+			Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+				cy / 2.0 + RandomClamped()*cy / 2.0);
 
-  firstLeader->Steering()->WanderOn();
-  m_Vehicles.push_back(firstLeader);
-  m_pCellSpace->AddEntity(firstLeader);
+			// Create the agent
+			Vehicle* pLeader = new LeaderAgent(this,
+				SpawnPos,                 //initial position
+				RandFloat()*TwoPi,        //start rotation
+				Vector2D(0, 0),            //velocity
+				Prm.VehicleMass,          //mass
+				Prm.MaxSteeringForce,     //max force
+				Prm.MaxSpeed,             //max velocity
+				Prm.MaxTurnRatePerSecond, //max turn rate
+				Prm.VehicleScale);        //scale
 
-  for (int a = 0; a < Prm.NumAgents; a++) {
-	  //determine a random starting position
-	  Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-		  cy / 2.0 + RandomClamped()*cy / 2.0);
+										  // Leader behavior
+										  // TODO
 
+			m_Leaders.push_back(pLeader);
 
-	  FollowerAgents* fAgent = new FollowerAgents(this,
-		  SpawnPos,                 //initial position
-		  RandFloat()*TwoPi,        //start rotation
-		  Vector2D(0, 0),            //velocity
-		  Prm.VehicleMass,          //mass
-		  Prm.MaxSteeringForce,     //max force
-		  Prm.MaxSpeed,             //max velocity
-		  Prm.MaxTurnRatePerSecond, //max turn rate
-		  Prm.VehicleScale,			//scale
-		  firstLeader);				//the leader of the follower     
-	  
-		  m_Vehicles.push_back(fAgent);
+			//add it to the cell subdivision
+			m_pCellSpace->AddEntity(pLeader);
+		}
+	}
 
-		  //add it to the cell subdivision
-		  m_pCellSpace->AddEntity(fAgent);
-  }
-  //////////////
-  /*
-  for (int a=0; a<Prm.NumAgents; ++a)
-  {
+	// setup basic agents
+	for (int a = 0; a < nb_poursuiveurs; ++a)
+	{
+		//determine a random starting position
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
 
-    //determine a random starting position
-    Vector2D SpawnPos = Vector2D(cx/2.0+RandomClamped()*cx/2.0,
-                                 cy/2.0+RandomClamped()*cy/2.0);
+		Vehicle* pVehicle;
 
+		switch (comportement)
+		{
+			case 0:
+			{
+				// Create the agent
+				pVehicle = new Vehicle(this,
+					SpawnPos,                 //initial position
+					RandFloat()*TwoPi,        //start rotation
+					Vector2D(0, 0),            //velocity
+					Prm.VehicleMass,          //mass
+					Prm.MaxSteeringForce,     //max force
+					Prm.MaxSpeed,             //max velocity
+					Prm.MaxTurnRatePerSecond, //max turn rate
+					Prm.VehicleScale);        //scale
 
-    Vehicle* pVehicle = new Vehicle(this,
-                                    SpawnPos,                 //initial position
-                                    RandFloat()*TwoPi,        //start rotation
-                                    Vector2D(0,0),            //velocity
-                                    Prm.VehicleMass,          //mass
-                                    Prm.MaxSteeringForce,     //max force
-                                    Prm.MaxSpeed,             //max velocity
-                                    Prm.MaxTurnRatePerSecond, //max turn rate
-                                    Prm.VehicleScale);        //scale
+				// Standard behavior
+				pVehicle->Steering()->WanderOn();
+				break;
+			}
+			case 1:
+			{
+				// Create the agent
+				pVehicle = new FollowerAgents(this,
+					SpawnPos,                 //initial position
+					RandFloat()*TwoPi,        //start rotation
+					Vector2D(0, 0),            //velocity
+					Prm.VehicleMass,          //mass
+					Prm.MaxSteeringForce,     //max force
+					Prm.MaxSpeed,             //max velocity
+					Prm.MaxTurnRatePerSecond, //max turn rate
+					Prm.VehicleScale,			//scale
+					m_Leaders[0]);				//leader
 
-    pVehicle->Steering()->WanderOn();
-	// Test
-	//pVehicle->Steering()->FlockingVOn();
-	*/
-    //m_Vehicles.push_back(pVehicle);
+				// Leader following behavior
+				// TODO
+				break;
+			}
+			case 2:
+			{
+				// FlokingV behavior
+				pVehicle->Steering()->FlockingVOn(); break;
+			}
+			default:
+				pVehicle->Steering()->WanderOn();
+		}
 
-    //add it to the cell subdivision
-    //m_pCellSpace->AddEntity(pVehicle);
-  }
+		m_Vehicles.push_back(pVehicle);
 
-  // TODO faire des ifs dependant des resultats des menus déroulants
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pVehicle);
+	}
 
 #define SHOAL
 #ifdef SHOAL
-  /*
-  m_Vehicles[Prm.NumAgents-1]->Steering()->FlockingOff();
-  m_Vehicles[Prm.NumAgents-1]->SetScale(Vector2D(10, 10));
-  m_Vehicles[Prm.NumAgents-1]->Steering()->WanderOn();
-  m_Vehicles[Prm.NumAgents-1]->SetMaxSpeed(70);
+	switch (comportement)
+	{
+	case 0:
+	{
+		m_Vehicles[nb_poursuiveurs-1]->Steering()->FlockingOff();
+		m_Vehicles[nb_poursuiveurs-1]->SetScale(Vector2D(10, 10));
+		m_Vehicles[nb_poursuiveurs-1]->Steering()->WanderOn();
+		m_Vehicles[nb_poursuiveurs-1]->SetMaxSpeed(70);
 
-
-   for (int i=0; i<Prm.NumAgents-1; ++i)
-  {
-    m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[Prm.NumAgents-1]);
-
-  }
-  */
+		for (int i=0; i<nb_poursuiveurs-1; ++i)
+		{
+			m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[nb_poursuiveurs-1]);
+		}
+		break;
+	}
+	default:
+		break;
+	}
 #endif
- 
-  //create any obstacles or walls
-  //CreateObstacles();
-  //CreateWalls();
-//}
 
+	//create any obstacles or walls
+	//CreateObstacles();
+	//CreateWalls();
+
+}
+
+GameWorld::GameWorld(int cx, int cy):
+	GameWorld(cx, cy, 0, 0, 0, Prm.NumAgents, 15)
+{}
 
 //-------------------------------- dtor ----------------------------------
 //------------------------------------------------------------------------
