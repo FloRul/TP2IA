@@ -256,7 +256,7 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				agent_humain = 0; break;
 			}
 		}
-		if (LOWORD(wParam) == DB_OK)
+		if (LOWORD(wParam) == DB_OK || LOWORD(wParam) == IDCANCEL)
 		{
 			// get the behavior wanted
 			comportement = SendDlgItemMessage(hDlg, ID_CB, CB_GETCURSEL, 0, 0);
@@ -266,11 +266,6 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			offset = GetDlgItemInt(hDlg, ID_OFFSET, NULL, FALSE);
 
 			EndDialog(hDlg, DB_OK);
-			return TRUE;
-		}
-		if (LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, 0);
 			return TRUE;
 		}
 	default:

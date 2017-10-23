@@ -29,11 +29,6 @@ LeaderAgent::LeaderAgent(GameWorld* world,
 LeaderAgent::~LeaderAgent()
 { }
 
-void LeaderAgent::Update(double time_elapsed)
-{
-
-}
-
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
 void LeaderAgent::Render()
