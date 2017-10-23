@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <time.h>
+#include <string.h>
 
 #include "constants.h"
 #include "misc/utils.h"
@@ -12,6 +13,8 @@
 #include "resource.h"
 #include "misc/WindowUtils.h"
 
+#define DB_OK 1
+
 //--------------------------------- Globals ------------------------------
 //
 //------------------------------------------------------------------------
@@ -21,9 +24,13 @@ char*	g_szWindowClassName = "MyWindowClass";
 
 GameWorld* g_GameWorld;
 
+HINSTANCE hinst;
+
 UINT nb_leader;
 UINT agent_humain;
-HINSTANCE hinst;
+UINT comportement;
+UINT nb_poursuiveur;
+UINT offset;
 
 BOOL APIENTRY Dialog1Proc(HWND, UINT, WPARAM, LPARAM);
 
@@ -52,6 +59,14 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 		//created
     case WM_CREATE:
       {
+		// initial parameters
+		int nb_leader = 0;
+		int agent_humain = 0;
+
+		// Ask user to enter informations for the application
+		if (DialogBox(hinst, "DIALOG1", hwnd, (DLGPROC)Dialog1Proc) == DB_OK)
+			InvalidateRect(hwnd, NULL, TRUE);
+
          //to get get the size of the client window first we need  to create
          //a RECT and then ask Windows to fill in our RECT structure with
          //the client window size. Then we assign to cxClient and cyClient 
@@ -85,26 +100,26 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 
          //don't forget to release the DC
          ReleaseDC(hwnd, hdc); 
+		 if (comportement == 0)
+		 {
+			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, 0, 0, nb_poursuiveur, offset);
+		 }
+		 else
+		 {
+			 g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
+				 comportement, nb_poursuiveur, offset);
+		 }
          
-         g_GameWorld = new GameWorld(cxClient, cyClient);
-
-		 // Ask user to enter informations for leader agent
-		 CreateDialog(hinst, "DIALOG1", hwnd, (DLGPROC)Dialog1Proc);
 
          ChangeMenuState(hwnd, IDR_PRIORITIZED, MFS_CHECKED);
          ChangeMenuState(hwnd, ID_VIEW_FPS, MFS_CHECKED);
-
-		 // Nombre d'agents leaders dans l'application
-		 int nb_leader = 0;
-		 //int agent_humain = 0;
-         
       }
 
       break;
 
     case WM_COMMAND:
     {
-      g_GameWorld->HandleMenuItems(wParam, hwnd); 
+      g_GameWorld->HandleMenuItems(wParam, hwnd);
     }
 
     break;
@@ -131,8 +146,9 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
           case 'R':
             {
                delete g_GameWorld;
-           
-               g_GameWorld = new GameWorld(cxClient, cyClient);
+			   // g_GameWorld = new GameWorld(cxClient, cyClient);
+               g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
+				   comportement, nb_poursuiveur, offset);
             }
 
             break;
@@ -149,12 +165,10 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 
     
     case WM_PAINT:
-      {
- 		       
+      {    
          PAINTSTRUCT ps;
           
          BeginPaint (hwnd, &ps);
-
         //fill our backbuffer with white
          BitBlt(hdcBackBuffer,
                 0,
@@ -166,17 +180,12 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
                 NULL,
                 WHITENESS);
 
-         
          gdi->StartDrawing(hdcBackBuffer);
-         
          g_GameWorld->Render();
-
          gdi->StopDrawing(hdcBackBuffer);
 
-        
-
          //now blit backbuffer to front
-			   BitBlt(ps.hdc, 0, 0, cxClient, cyClient, hdcBackBuffer, 0, 0, SRCCOPY); 
+		 BitBlt(ps.hdc, 0, 0, cxClient, cyClient, hdcBackBuffer, 0, 0, SRCCOPY); 
           
          EndPaint (hwnd, &ps);
 
@@ -217,32 +226,48 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 	{
-		if (nb_leader == 0) CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
-		if (nb_leader == 1) CheckDlgButton(hDlg, ID_ONE_LEADER, BST_CHECKED);
-		if (nb_leader == 2) CheckDlgButton(hDlg, ID_TWO_LEADER, BST_CHECKED);
-		CheckRadioButton(hDlg, ID_HUMAN_AGENT, ID_NOT_HUMAN_AGENT, agent_humain);
+		// Settings of the comboBox leader
+		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"Basique");
+		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"LeaderFollowing");
+		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"FlockingV");
+		SendDlgItemMessage(hDlg, ID_CB, CB_SETCURSEL, comportement, 0);
+
+		// Settings des boutons radio
+		CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
+		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_CHECKED);
+
+		// Settings default values for int
+		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER, std::to_string(Prm.NumAgents).c_str());
+		SetDlgItemText(hDlg, ID_OFFSET, "10");
+
 		return TRUE;
 	}
 	case WM_COMMAND:
 		if (HIWORD(wParam) == BN_CLICKED) {
 			switch (LOWORD(wParam)) {
 			case ID_ZERO_LEADER:
-				nb_leader = 0;
-				break;
+				nb_leader = 0; break;
 			case ID_ONE_LEADER:
-				nb_leader = 1;
-				break;
+				nb_leader = 1; break;
 			case ID_TWO_LEADER:
-				nb_leader = 2;
-				break;
+				nb_leader = 2; break;
 			case ID_HUMAN_AGENT:
-				agent_humain = 1;
-				break;
+				agent_humain = 1; break;
 			case ID_NOT_HUMAN_AGENT:
-				agent_humain = 0;
-				break;
+				agent_humain = 0; break;
 			}
-			InvalidateRect(hDlg, NULL, TRUE);
+		}
+		if (LOWORD(wParam) == DB_OK)
+		{
+			// get the behavior wanted
+			comportement = SendDlgItemMessage(hDlg, ID_CB, CB_GETCURSEL, 0, 0);
+			// get the number of pursuers
+			nb_poursuiveur = GetDlgItemInt(hDlg, ID_NB_AGENT_FOLLOWER, NULL, FALSE);
+			// get the offset
+			offset = GetDlgItemInt(hDlg, ID_OFFSET, NULL, FALSE);
+
+			EndDialog(hDlg, DB_OK);
+			return TRUE;
 		}
 		if (LOWORD(wParam) == IDCANCEL)
 		{
