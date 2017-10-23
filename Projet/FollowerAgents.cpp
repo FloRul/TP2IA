@@ -33,6 +33,8 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 	//this->Steering()->ArriveOn();
 	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(2, 0));
 	this->Steering()->SeparationOn();
+	this->Steering()->Calculate();
+
 }
 
 
