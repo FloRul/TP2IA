@@ -58,6 +58,7 @@ private:
 
     ViewDistance            = GetNextParameterFloat();
 	MinDistance             = GetNextParameterFloat();
+	MaxDistance             = GetNextParameterFloat();
     MinDetectionBoxLength   = GetNextParameterFloat();
     WallDetectionFeelerLength=GetNextParameterFloat();
 
@@ -130,6 +131,7 @@ public:
   //how close a neighbor must be to be considers as too close (used
   //for FlockingV)
   double MinDistance;
+  double MaxDistance;
 
   //used in obstacle avoidance
   double MinDetectionBoxLength;
