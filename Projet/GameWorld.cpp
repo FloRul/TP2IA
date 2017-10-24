@@ -55,6 +55,29 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 
+	//if (agent_humain==1) {
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
+
+		Vehicle* pVehicle = new Vehicle(this,
+			SpawnPos,                 //initial position
+			RandFloat()*TwoPi,        //start rotation
+			Vector2D(0, 0),           //velocity
+			Prm.VehicleMass,          //mass
+			Prm.MaxSteeringForce,     //max force
+			Prm.MaxSpeed,             //max velocity
+			Prm.MaxTurnRatePerSecond, //max turn rate
+			Prm.VehicleScale);        //scale
+
+
+		
+		m_Vehicles.push_back(pVehicle);
+
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pVehicle);
+
+	//}
+
 	if(comportement != 0)
 	{
 		// setup leaders agents
@@ -158,27 +181,27 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		m_pCellSpace->AddEntity(pVehicle);
 	}
 
-#define SHOAL
-#ifdef SHOAL
-	switch (comportement)
-	{
-	case 0:
-	{
-		m_Vehicles[nb_poursuiveurs-1]->Steering()->FlockingOff();
-		m_Vehicles[nb_poursuiveurs-1]->SetScale(Vector2D(10, 10));
-		m_Vehicles[nb_poursuiveurs-1]->Steering()->WanderOn();
-		m_Vehicles[nb_poursuiveurs-1]->SetMaxSpeed(70);
-
-		for (int i=0; i<nb_poursuiveurs-1; ++i)
-		{
-			m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[nb_poursuiveurs-1]);
-		}
-		break;
-	}
-	default:
-		break;
-	}
-#endif
+//#define SHOAL
+//#ifdef SHOAL
+//	switch (comportement)
+//	{
+//	case 0:
+//	{
+//		m_Vehicles[nb_poursuiveurs-1]->Steering()->FlockingOff();
+//		m_Vehicles[nb_poursuiveurs-1]->SetScale(Vector2D(10, 10));
+//		m_Vehicles[nb_poursuiveurs-1]->Steering()->WanderOn();
+//		m_Vehicles[nb_poursuiveurs-1]->SetMaxSpeed(70);
+//
+//		for (int i=0; i<nb_poursuiveurs-1; ++i)
+//		{
+//			m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[nb_poursuiveurs-1]);
+//		}
+//		break;
+//	}
+//	default:
+//		break;
+//	}
+//#endif
 
 	//create any obstacles or walls
 	//CreateObstacles();
@@ -348,6 +371,10 @@ void GameWorld::SetCrosshair(POINTS p)
 //------------------------- HandleKeyPresses -----------------------------
 void GameWorld::HandleKeyPresses(WPARAM wParam)
 {
+	bool t = true;
+	Vector2D memory;
+	double rotation;
+	C2DMatrix RotationMatrix;
 
   switch(wParam)
   {
@@ -407,6 +434,50 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
           }
         }
         break;
+
+	case 0x25: // -- TOUCHE LEFT
+	
+		rotation = m_Vehicles[0]->MaxTurnRate();
+		
+		RotationMatrix.Rotate(rotation);
+		RotationMatrix.TransformVector2Ds(m_Vehicles[0]->Heading());
+		RotationMatrix.TransformVector2Ds(m_Vehicles[0]->Velocity());
+		m_Vehicles[0]->Side() = m_Vehicles[0]->Heading().Perp();
+	
+		
+		break;
+		
+	case 0x26: // up
+		
+		if (t) {
+			m_Vehicles[0]->Steering()->PursuitOn(m_Vehicles[1]);
+			memory = m_Vehicles[0]->Velocity();
+			t = false;
+		}
+		else {
+			m_Vehicles[0]->Steering()->PursuitOff();
+			m_Vehicles[0]->SetVelocity(memory);
+		}
+		
+
+		
+		break;
+
+	case 0x27: // right
+	
+		 rotation = -1 * m_Vehicles[0]->MaxTurnRate();
+		
+		RotationMatrix.Rotate(rotation);
+		RotationMatrix.TransformVector2Ds(m_Vehicles[0]->Heading());
+		RotationMatrix.TransformVector2Ds(m_Vehicles[0]->Velocity());
+		m_Vehicles[0]->Side() = m_Vehicles[0]->Heading().Perp();
+	
+		 
+		break;
+
+	case 0x28: // down
+		TogglePause();
+		break;
 
   }//end switch
 }

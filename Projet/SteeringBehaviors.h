@@ -57,6 +57,7 @@ private:
 	enum behavior_type
 	{
 		none = 0x00000,
+		noBrain = 0x00001,
 		seek = 0x00002,
 		flee = 0x00004,
 		arrive = 0x00008,
