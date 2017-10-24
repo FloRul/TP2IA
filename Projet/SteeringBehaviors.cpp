@@ -54,6 +54,7 @@ SteeringBehavior::SteeringBehavior(Vehicle* agent):
              m_dWeightHide(Prm.HideWeight),
              m_dWeightEvade(Prm.EvadeWeight),
              m_dWeightFollowPath(Prm.FollowPathWeight),
+			 m_dWeightFlockingV(Prm.FlockingVWeight),
              m_bCellSpaceOn(false),
              m_SummingMethod(prioritized)
 
@@ -240,6 +241,7 @@ Vector2D SteeringBehavior::CalculatePrioritized()
   //also a good behavior to add into this mix)
   if (!isSpacePartitioningOn())
   {
+	
     if (On(separation))
     {
       force = Separation(m_pVehicle->World()->Agents()) * m_dWeightSeparation;
@@ -287,6 +289,7 @@ Vector2D SteeringBehavior::CalculatePrioritized()
     }
   }
 
+  // -- FlockingV -- //
   if (On(flocking_v))
   {
 	  force = FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
@@ -403,6 +406,12 @@ Vector2D SteeringBehavior::CalculateWeightedSum()
   //also a good behavior to add into this mix)
   if (!isSpacePartitioningOn())
   {
+	// -- FlockingV -- //
+	if (On(flocking_v))
+	{
+		m_vSteeringForce += FlockingV(m_pVehicle->World()->Agents()) * m_dWeightFlockingV;
+	}
+
     if (On(separation))
     {
       m_vSteeringForce += Separation(m_pVehicle->World()->Agents()) * m_dWeightSeparation;
@@ -435,7 +444,6 @@ Vector2D SteeringBehavior::CalculateWeightedSum()
       m_vSteeringForce += CohesionPlus(m_pVehicle->World()->Agents()) * m_dWeightCohesion;
     }
   }
-
 
   if (On(wander))
   {
@@ -570,6 +578,23 @@ Vector2D SteeringBehavior::CalculateDithered()
         return m_vSteeringForce;
       }
     }
+  }
+
+  // -- FlockingV -- //
+  if (!isSpacePartitioningOn())
+  {
+	  if (On(flocking_v) && RandFloat() < Prm.prSeparation)
+	  {
+		  m_vSteeringForce += FlockingV(m_pVehicle->World()->Agents()) *
+			  m_dWeightFlockingV / Prm.prFlockingV;
+
+		  if (!m_vSteeringForce.isZero())
+		  {
+			  m_vSteeringForce.Truncate(m_pVehicle->MaxForce());
+
+			  return m_vSteeringForce;
+		  }
+	  }
   }
 
 
@@ -1467,24 +1492,20 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 		//make sure this agent isn't included in the calculations
 		if (neighbors[a] != m_pVehicle)
 		{
-			Vector2D ToAgent = m_pVehicle->Pos() - neighbors[a]->Pos();
+			Vector2D ToAgent = neighbors[a]->Pos() - m_pVehicle->Pos();
 
 			if (ShortestVector == Vector2D(0, 0) || ToAgent.Length() < ShortestVector.Length())
 			{
 				// Save the position of the nearest agent
 				NearestAgent = neighbors[a];
 				ShortestVector = ToAgent;
-				//scale the force inversely proportional to the agents distance  
-				//from its neighbor.
-				//SteeringForce = Vec2DNormalize(ToAgent) * ToAgent.Length();
 			}
 		}
 	}
-	int t = ShortestVector.Length();
 	// analyse if the agent is far away from his neighbors
-	if (ShortestVector.Length() > 40)
+	if (ShortestVector.Length() > Prm.MaxDistance)
 	{
-		SteeringForce = Evade(NearestAgent);
+		SteeringForce = Arrive(ShortestVector, slow);
 		// get the near by agent to arrive to him
 		return SteeringForce;
 	} 
@@ -1501,23 +1522,35 @@ Vector2D SteeringBehavior::CohesionV(const vector<Vehicle*> &neighbors)
 //------------------------------------------------------------------------
 Vector2D SteeringBehavior::OffsetVision(const std::vector<Vehicle*> &neighbors)
 {
-	//Vector2D SteeringForce;
+	Vector2D SteeringForce;
+	int a = 0;
 
-	//for (unsigned int a = 0; a < neighbors.size(); ++a)
-	//{
-	//	//make sure this agent isn't included in the calculations and that
-	//	//the agent being examined is close enough. ***also make sure it is 
-	//	//in front of the current agent
-	//	if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
-	//	{
-	//		Vector2D ToAgent = m_pVehicle->Pos() - neighbors[a]->Pos();
+	for (unsigned int a = 0; a < neighbors.size(); ++a)
+	{
+		//make sure this agent isn't included in the calculations and that
+		//the agent being examined is close enough. ***also make sure it is 
+		//in front of the current agent
+		if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
+		{
 
-	//		//scale the force inversely proportional to the agents distance  
-	//		//from its neighbor.
-	//		SteeringForce += Vec2DNormalize(ToAgent) / ToAgent.Length();
-	//	}
-	//}
-	return Vector2D(0,0);
+			Vector2D ToEvader = neighbors[a]->Pos() - m_pVehicle->Pos();
+
+			double RelativeHeading = m_pVehicle->Heading().Dot(neighbors[a]->Heading());
+
+			if (ToEvader.Dot(m_pVehicle->Heading()) < -0.90)  //acos(0.90)=25 degs
+			{
+				// Compute the orthogonal of the heading
+				Vector2D offset = Vector2D(-m_pVehicle->Heading().y, m_pVehicle->Heading().x);
+				//return OffsetPursuit(neighbors[a], offset - m_pVehicle->Heading());
+				return OffsetPursuit(neighbors[a], Vector2D(2,2));
+			}
+			else
+			{
+				return Vector2D(0, 0);
+			}
+		}
+	}
+	return SteeringForce;
 }
 
 //-------------------------  SlowDown  -------------------------------
@@ -1529,26 +1562,38 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 {
 	Vector2D SteeringForce;
 	bool found = false;
-	int a = 0;
-	while (a < neighbors.size() && !found)
+	std::vector<Vehicle*>::const_iterator curOb = neighbors.begin();
+
+	while (curOb != neighbors.end() && !found)
 	{
 		//make sure this agent isn't included in the calculations and that
 		//the agent being examined is close enough.
-		if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
+		if (((*curOb) != m_pVehicle) && (*curOb)->IsTagged())
 		{
-			Vector2D ToAgent = neighbors[a]->Pos() - m_pVehicle->Pos();
+			//calculate this obstacle's position in local space
+			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
+													m_pVehicle->Heading(),
+													m_pVehicle->Side(),
+													m_pVehicle->Pos());
 
-			//test if the agent is too close to the current agent
-			if (ToAgent.Length() < 20) {
-				//scale the force inversely proportional to the agents distance  
-				//from its neighbor.
-				SteeringForce = Vec2DNormalize(ToAgent) / (0.1*ToAgent.Length());
+			//we consider that a bird can't see behind him. 
+			//(in which case it can be ignored)
+			if (LocalPos.x < 0)
+			{
+				Vector2D ToAgent = (*curOb)->Pos() - m_pVehicle->Pos();
 
-				// allow to exit the loop
-				found = true;
+				//test if the agent is too close to the current agent
+				if (ToAgent.Length() < Prm.MinDistance) {
+					//scale the force inversely proportional to the agents distance  
+					//from its neighbor.
+					SteeringForce = Vec2DNormalize(m_pVehicle->Heading()) / (ToAgent.Length()*0.4);
+
+					// allow to exit the loop
+					found = true;
+				}
 			}
 		}
-		++a;
+		++curOb;
 	}
 	if (found)
 	{
@@ -1569,6 +1614,7 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 {
 	Vector2D SteeringForce;
+	int flag1 = 0;
 
 	// Call rule n°1
 	Vector2D rule1 = CohesionV(neighbors);
@@ -1579,16 +1625,42 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 
 	// if all the previous conditions are fill,
 	// the agent adapt his speed and heading with his neighborhood
-	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) && 
+	if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) &&
 		rule3 == Vector2D(0,0))
 	{
-		// Adapter la speed + heading ici
-		return rule1;
+		////Vector2D speedForce;
+		//double averageSpeed = 0.0;
+
+		//// Compute the average speed of his neighborhood
+		////used to count the number of vehicles in the neighborhood
+		//int    NeighborCount = 0;
+
+		////iterate through all the tagged vehicles and sum their heading vectors  
+		//for (unsigned int a = 0; a<neighbors.size(); ++a)
+		//{
+		//	//make sure *this* agent isn't included in the calculations and that
+		//	//the agent being examined  is close enough
+		//	if ((neighbors[a] != m_pVehicle) && neighbors[a]->IsTagged())
+		//	{
+		//		averageSpeed += neighbors[a]->Speed();
+		//		++NeighborCount;
+		//	}
+		//}
+		//if (NeighborCount > 0)
+		//{
+		//	averageSpeed += m_pVehicle->Speed();
+		//	averageSpeed /= (double)NeighborCount + 1;
+
+		//}
+		//// Adapter la speed + heading ici
+		//Vector2D headingForce = Alignment(neighbors) + Vector2D(10,0);
+		
+		return Vector2D(0, 0);
 	}
 	else
 	{
 		// Appliquer une pondération surement aprés tests successifs.
-		return rule1;//+ rule2 + rule3;
+		return rule1 * 10 + rule2 * 10 + rule3 * 10;
 	}
 }
 

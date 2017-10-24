@@ -41,13 +41,6 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 FollowerAgents::~FollowerAgents()
 { }
 
-
-void FollowerAgents::Update(double time_elapsed)
-{
-
-}
-
-
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
 void FollowerAgents::Render()

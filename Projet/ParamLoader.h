@@ -54,8 +54,11 @@ private:
     HideWeight              = GetNextParameterFloat() * SteeringForceTweaker;
     EvadeWeight             = GetNextParameterFloat() * SteeringForceTweaker;
     FollowPathWeight        = GetNextParameterFloat() * SteeringForceTweaker;
+	FlockingVWeight			= GetNextParameterFloat() * SteeringForceTweaker;
 
     ViewDistance            = GetNextParameterFloat();
+	MinDistance             = GetNextParameterFloat();
+	MaxDistance             = GetNextParameterFloat();
     MinDetectionBoxLength   = GetNextParameterFloat();
     WallDetectionFeelerLength=GetNextParameterFloat();
 
@@ -70,6 +73,7 @@ private:
     prEvade                 = GetNextParameterFloat();
     prHide                  = GetNextParameterFloat();
     prArrive                = GetNextParameterFloat();
+	prFlockingV				= GetNextParameterFloat();
 
     MaxTurnRatePerSecond    = Pi;
   }
@@ -118,10 +122,16 @@ public:
   double HideWeight      ;
   double EvadeWeight     ;
   double FollowPathWeight;
+  double FlockingVWeight;
 
   //how close a neighbour must be before an agent perceives it (considers it
   //to be within its neighborhood)
   double ViewDistance;
+
+  //how close a neighbor must be to be considers as too close (used
+  //for FlockingV)
+  double MinDistance;
+  double MaxDistance;
 
   //used in obstacle avoidance
   double MinDetectionBoxLength;
@@ -142,6 +152,7 @@ public:
   double prEvade;
   double prHide;
   double prArrive;
+  double prFlockingV;
   
 };
 
