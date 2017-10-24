@@ -39,7 +39,8 @@ const double WanderRad    = 1.2;
 //distance the wander circle is projected in front of the agent
 const double WanderDist   = 2.0;
 //the maximum amount of displacement along the circle each frame
-const double WanderJitterPerSec = 80.0;
+//const double WanderJitterPerSec = 80.0;
+const double WanderJitterPerSec = 5.0;
 
 //used in path following
 const double WaypointSeekDist   = 20;                                          
@@ -258,6 +259,9 @@ private:
 	Vector2D OffsetVision(const std::vector<Vehicle*> &agents);
 	Vector2D SlowDown(const std::vector<Vehicle*> &agents);
 	Vector2D FlockingV(const std::vector<Vehicle*> &agents);
+	double AverageSpeed(const std::vector<Vehicle*> &neighbors);
+	Vehicle* getCloserAgent(const std::vector<Vehicle*> &neighbors);
+	Vehicle* getCloserAgentInFront(const std::vector<Vehicle*> &neighbors);
 
 
 	//the following three are the same as above but they use cell-space
