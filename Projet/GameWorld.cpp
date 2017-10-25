@@ -81,6 +81,23 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		//add it to the cell subdivision
 		m_pCellSpace->AddEntity(pLeader);
 	}
+	Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+		cy / 2.0 + RandomClamped()*cy / 2.0);
+
+	Vehicle* leader = new Vehicle(this,
+		SpawnPos,                 //initial position
+		RandFloat()*TwoPi,        //start rotation
+		Vector2D(0, 0),            //velocity
+		Prm.VehicleMass,          //mass
+		Prm.MaxSteeringForce,     //max force
+		150.0,             //max velocity
+		Prm.MaxTurnRatePerSecond, //max turn rate
+		Prm.VehicleScale);        //scale
+		leader->Steering()->WanderOn();
+		m_Vehicles.push_back(leader);
+
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(leader);
 
 	// setup basic agents
 	for (int a = 0; a < nb_poursuiveurs; ++a)
@@ -122,7 +139,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxSpeed,             //max velocity
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale,			//scale
-					m_Leaders[0]);				//leader
+					leader);				//leader
 
 				// Leader following behavior
 				// TODO
