@@ -180,34 +180,6 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		//add it to the cell subdivision
 		m_pCellSpace->AddEntity(pVehicle);
 	}
-
-
-#define SHOAL
-#ifdef SHOAL
-	//switch (comportement)
-	//{
-	//case 0:
-	//{
-		m_Vehicles[nb_poursuiveurs-1]->Steering()->FlockingVOff();
-		m_Vehicles[nb_poursuiveurs-1]->SetScale(Vector2D(10, 10));
-		m_Vehicles[nb_poursuiveurs-1]->Steering()->WanderOn();
-		m_Vehicles[nb_poursuiveurs-1]->SetMaxSpeed(70);
-
-		/*for (int i=0; i<nb_poursuiveurs-1; ++i)
-		{
-			m_Vehicles[i]->Steering()->EvadeOn(m_Vehicles[nb_poursuiveurs-1]);
-		}*/
-	//	break;
-	//}
-	//default:
-	//	break;
-	//}
-#endif
-
-	//create any obstacles or walls
-	//CreateObstacles();
-	//CreateWalls();
-
 }
 
 GameWorld::GameWorld(int cx, int cy):

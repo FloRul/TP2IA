@@ -21,6 +21,7 @@
 #include "BaseGameEntity.h"
 #include "EntityFunctionTemplates.h"
 #include "vehicle.h"
+#include "FollowerAgents.h"
 
 
 class Obstacle;
@@ -37,6 +38,9 @@ private:
 
   //a container of all the moving entities except leaders
   std::vector<Vehicle*>         m_Vehicles;
+
+  //a container of followingAgents
+  std::vector<FollowerAgents*>  m_FollowerAgents;
 
   //a container of all the leaders
   std::vector<Vehicle*>         m_Leaders;
@@ -62,7 +66,7 @@ private:
   Vector2D                      m_vCrosshair;
 
   //keeps track of the average FPS
-  double                         m_dAvFrameTime;
+  double                        m_dAvFrameTime;
 
 
   //flags to turn aids and obstacles etc on/off
