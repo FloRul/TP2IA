@@ -2,6 +2,7 @@
 #include "Vehicle.h"
 #include "LeaderAgent.h"
 #include "FollowerAgents.h"
+#include "Zombie.h"
 #include "constants.h"
 #include "Obstacle.h"
 #include "2d/Geometry.h"
@@ -57,7 +58,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 	
-	if (agent_humain != 1) {
+	if (agent_humain == 1) {
 		
 		m_aHuman = true;
 
@@ -231,7 +232,29 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			break;
 		case 3:
 		{
-			// TODO : Greg. Ne pas toucher.
+			// Create the zombie
+			for (int a = 0; a < nb_agents; ++a)
+			{
+				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+					cy / 2.0 + RandomClamped()*cy / 2.0);
+				// Create the agent
+				Zombie* pVehicle = new Zombie(this,
+					SpawnPos,                 //initial position
+					RandFloat()*TwoPi,        //start rotation
+					Vector2D(0, 0),            //velocity
+					Prm.VehicleMass,          //mass
+					Prm.MaxSteeringForce,     //max force
+					Prm.MaxSpeed - 200,             //max velocity
+					Prm.MaxTurnRatePerSecond, //max turn rate
+					Prm.VehicleScale);        //scale
+
+				//add dans la liste de vehicule
+				m_Vehicles.push_back(pVehicle);
+				//add it to the cell subdivision
+				m_pCellSpace->AddEntity(pVehicle);
+			}
+			break;
+
 			break;
 		}
 		}
@@ -466,37 +489,25 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
 
 	case 0x25 : // Left
 		if (m_aHuman) {
-			
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x - 20;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
-			m_Vehicles[0]->Steering()->SeekOn();
+
 		}
 		break;
 
 	case 0x26: // Up
 		if (m_aHuman) {
-			
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y - 20;
-			m_Vehicles[0]->Steering()->SeekOn();
+
 		}
 		break;
 
 	case 0x27: // right
 		if (m_aHuman) {
 
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x + 20;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
-			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x28: // down
 		if (m_aHuman) {
 
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y + 20 ;
-			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
@@ -749,16 +760,15 @@ void GameWorld::Render()
     }
   }  
 
-
-/*#ifndef CROSSHAIR
-#define CROSSHAIR
+//#define CROSSHAIR
+#ifdef CROSSHAIR
   //and finally the crosshair
   gdi->RedPen();
   gdi->Circle(m_vCrosshair, 4);
   gdi->Line(m_vCrosshair.x - 8, m_vCrosshair.y, m_vCrosshair.x + 8, m_vCrosshair.y);
   gdi->Line(m_vCrosshair.x, m_vCrosshair.y - 8, m_vCrosshair.x, m_vCrosshair.y + 8);
   gdi->TextAtPos(5, cyClient() - 20, "Click to move crosshair");
-#endif*/
+#endif
 
 
   //gdi->TextAtPos(cxClient() -120, cyClient() - 20, "Press R to reset");
