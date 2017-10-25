@@ -29,7 +29,10 @@ HINSTANCE hinst;
 UINT nb_leader;
 UINT agent_humain;
 UINT comportement;
-UINT nb_poursuiveur;
+UINT nb_agent;
+UINT nb_poursuiveur1;
+UINT nb_poursuiveur2;
+UINT nb_poursuiveur3;
 UINT offset;
 
 BOOL APIENTRY Dialog1Proc(HWND, UINT, WPARAM, LPARAM);
@@ -102,12 +105,12 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
          ReleaseDC(hwnd, hdc); 
 		 if (comportement == 0)
 		 {
-			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, agent_humain, 0, nb_poursuiveur, offset);
+			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, agent_humain, 0, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
 		 }
 		 else
 		 {
 			 g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
-				 comportement, nb_poursuiveur, offset);
+				 comportement, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
 		 }
          
          ChangeMenuState(hwnd, IDR_PRIORITIZED, MFS_CHECKED);
@@ -147,7 +150,7 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
                delete g_GameWorld;
 			   // g_GameWorld = new GameWorld(cxClient, cyClient);
                g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
-				   comportement, nb_poursuiveur, offset);
+				   comportement, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
             }
 
             break;
@@ -218,6 +221,24 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 		 return DefWindowProc (hwnd, msg, wParam, lParam);
 }
 
+void LeaderFollowingField(HWND hDlg, bool enable)
+{
+	// Enabled radio buttons
+	HWND buttonNbLeader = GetDlgItem(hDlg, ID_ZERO_LEADER);
+	EnableWindow(buttonNbLeader, enable);
+	buttonNbLeader = GetDlgItem(hDlg, ID_ONE_LEADER);
+	EnableWindow(buttonNbLeader, enable);
+	buttonNbLeader = GetDlgItem(hDlg, ID_TWO_LEADER);
+	EnableWindow(buttonNbLeader, enable);
+
+	// Enable TextFields
+	HWND TextFieldNbLeader = GetDlgItem(hDlg, ID_NB_AGENT_FOLLOWER1);
+	EnableWindow(TextFieldNbLeader, enable);
+	TextFieldNbLeader = GetDlgItem(hDlg, ID_NB_AGENT_FOLLOWER2);
+	EnableWindow(TextFieldNbLeader, enable);
+	TextFieldNbLeader = GetDlgItem(hDlg, ID_NB_AGENT_FOLLOWER3);
+	EnableWindow(TextFieldNbLeader, enable);
+}
 
 BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -230,18 +251,35 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"LeaderFollowing");
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"FlockingV");
 		SendDlgItemMessage(hDlg, ID_CB, CB_SETCURSEL, comportement, 0);
+		
+		SendMessage(hDlg, CB_SHOWDROPDOWN, FALSE, 0);
 
 		// Settings des boutons radio
 		CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
-		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_CHECKED);
+		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_INDETERMINATE);
 
 		// Settings default values for int
-		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER, std::to_string(Prm.NumAgents).c_str());
+		SetDlgItemText(hDlg, ID_NB_AGENT, std::to_string(Prm.NumAgents).c_str());
 		SetDlgItemText(hDlg, ID_OFFSET, "10");
-
 		return TRUE;
 	}
 	case WM_COMMAND:
+
+		if (HIWORD(wParam) == CBN_SELCHANGE) {
+			// Retrieve the choice of method
+			int ItemIndex = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+				(WPARAM)0, (LPARAM)0);
+			TCHAR  ListItem[256];
+			(TCHAR)SendMessage((HWND)lParam, (UINT)CB_GETLBTEXT,
+				(WPARAM)ItemIndex, (LPARAM)ListItem);
+			//MessageBox(hDlg, (LPCWSTR)ListItem, TEXT("Item Selected"), MB_OK);
+
+			if (strcmp(ListItem, "LeaderFollowing") == 0)
+				LeaderFollowingField(hDlg, true);
+			else
+				LeaderFollowingField(hDlg, false);
+		}
+
 		if (HIWORD(wParam) == BN_CLICKED) {
 			switch (LOWORD(wParam)) {
 			case ID_ZERO_LEADER:
@@ -260,8 +298,14 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			// get the behavior wanted
 			comportement = SendDlgItemMessage(hDlg, ID_CB, CB_GETCURSEL, 0, 0);
-			// get the number of pursuers
-			nb_poursuiveur = GetDlgItemInt(hDlg, ID_NB_AGENT_FOLLOWER, NULL, FALSE);
+			// get the number of stadard agent 
+			nb_agent = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			// get the number of pursuiver for the leader1
+			nb_poursuiveur1 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			// get the number of pursuiver for the leader2
+			nb_poursuiveur2 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			// get the number of pursuiver for the player
+			nb_poursuiveur3 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
 			// get the offset
 			offset = GetDlgItemInt(hDlg, ID_OFFSET, NULL, FALSE);
 
@@ -272,10 +316,6 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return FALSE;
 	}
 }
-
-
-
-
 
 //-------------------------------- WinMain -------------------------------
 //

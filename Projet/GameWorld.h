@@ -93,7 +93,8 @@ private:
 
 public:
 
-	GameWorld(int cx, int cy, int nb_leader, int agent_humain, int comportement, int nb_poursuiveur, int offset);
+	GameWorld(int cx, int cy, int nb_leader, int agent_humain, int comportement, int nb_agents, 
+		int nb_poursuiveurs_l1, int nb_poursuiveurs_l2, int nb_poursuiveurs_h, int offset);
 
 	GameWorld(int cx, int cy);
 
