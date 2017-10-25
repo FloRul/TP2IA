@@ -26,6 +26,8 @@ using std::vector;
 SteeringBehavior::SteeringBehavior(Vehicle* agent):
                                   
              
+
+
              m_pVehicle(agent),
              m_iFlags(0),
              m_dDBoxLength(Prm.MinDetectionBoxLength),
@@ -735,6 +737,25 @@ Vector2D SteeringBehavior::Seek(Vector2D TargetPos)
 {
   Vector2D DesiredVelocity = Vec2DNormalize(TargetPos - m_pVehicle->Pos())
                             * m_pVehicle->MaxSpeed();
+
+  Vector2D diff = m_pVehicle->World()->Crosshair() - m_pVehicle->Pos();
+  Vector2D fin = m_pVehicle->World()->Crosshair() + diff;
+
+  /*if (fin.x < 0) {
+	  fin.x = m_pVehicle->World()->cxClient() - fin.x;
+  }else if (fin.x >= m_pVehicle->World()->cxClient()) {
+	  fin.x = fin.x - m_pVehicle->World()->cxClient();
+  }
+  if (fin.y < 0) {
+	  fin.y =  m_pVehicle->World()->cyClient() - fin.y;
+  } else if (fin.y >= m_pVehicle->World()->cyClient()) {
+	  fin.y = fin.y - m_pVehicle->World()->cyClient();
+  }*/
+
+  m_pVehicle->World()->SetCrosshair(fin);
+  
+
+
 
   return (DesiredVelocity - m_pVehicle->Velocity());
 }
