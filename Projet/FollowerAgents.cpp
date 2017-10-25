@@ -26,7 +26,10 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 		max_force,
 		max_speed,
 		max_turn_rate,
-		scale){}
+		scale)
+{
+	this->leader = leaderf;
+}
 
 FollowerAgents::FollowerAgents(GameWorld* world,
 	Vector2D position,
@@ -59,11 +62,11 @@ Vehicle* FollowerAgents::GetLeader()
 
 void FollowerAgents::SetLeader(Vehicle* _leader) 
 {
-	if(_leader) this->leader = _leader;
+	this->leader = _leader;
 }
 
 void FollowerAgents::UpdateSteering() {
-	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(1, 0));
+	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(0.5, 0));
 	this->Steering()->SeparationOn();
 }
 
