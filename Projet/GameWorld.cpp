@@ -56,7 +56,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 	
-	if (agent_humain == 1) {
+	if (agent_humain != 1) {
 		
 		m_aHuman = true;
 
@@ -437,25 +437,37 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
 
 	case 0x25 : // Left
 		if (m_aHuman) {
-
+			
+			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x - 20;
+			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
+			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x26: // Up
 		if (m_aHuman) {
-
+			
+			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
+			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y - 20;
+			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x27: // right
 		if (m_aHuman) {
 
+			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x + 20;
+			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
+			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x28: // down
 		if (m_aHuman) {
 
+			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
+			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y + 20 ;
+			m_Vehicles[0]->Steering()->SeekOn();
 		}
 		break;
 
@@ -708,8 +720,9 @@ void GameWorld::Render()
     }
   }  
 
-//#define CROSSHAIR
-#ifdef CROSSHAIR
+
+#ifndef CROSSHAIR
+#define CROSSHAIR
   //and finally the crosshair
   gdi->RedPen();
   gdi->Circle(m_vCrosshair, 4);
