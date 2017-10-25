@@ -1567,8 +1567,7 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 				if (ToAgent.Length() < Prm.MinDistance) {
 					//scale the force inversely proportional to the agents distance  
 					//from its neighbor.
-					double y = ToAgent.Length();
-					SteeringForce = Vec2DNormalize(ToAgent) / ToAgent.Length();
+					SteeringForce = Vec2DNormalize(ToAgent) * m_pVehicle->Velocity().Length();
 					//SteeringForce = Flee((*curOb)->Pos()) * ToAgent.Length();
 
 					// allow to exit the loop
@@ -1578,7 +1577,10 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 		}
 		++curOb;
 	}
-	return SteeringForce;
+	if (found)
+		return SteeringForce;
+	else
+		return Vector2D(0,0);
 }
 
 
@@ -1590,27 +1592,58 @@ Vector2D SteeringBehavior::SlowDown(const std::vector<Vehicle*> &neighbors)
 Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 {
 	Vector2D SteeringForce = CohesionV(neighbors);
+	//Vector2D SteeringForce;
 	Vehicle* ClosestAgent = getCloserAgent(neighbors);
 
 	if (SteeringForce == Vector2D(0,0))
 	{
 		//SteeringForce = Flee(ClosestAgent->Pos());
-		SteeringForce = SlowDown(neighbors);
-	}
-	else
-	{
-		//calculate this obstacle's position in local space
-		Vector2D LocalPos = PointToLocalSpace(ClosestAgent->Pos(),
-									m_pVehicle->Heading(),
-									m_pVehicle->Side(),
-									m_pVehicle->Pos());
+		SteeringForce += SlowDown(neighbors);
 
-		// If the agent he's on the right of the current agent
-		if (LocalPos.y >= 0)
-			SteeringForce = CohesionV(neighbors);
-		else
-			SteeringForce = CohesionV(neighbors);
+		if (SteeringForce == Vector2D(0, 0))
+		{
+			Vehicle* ClosestAgentInFront = getCloserAgentInFront(neighbors);
+			if (ClosestAgentInFront != nullptr)
+			{
+				//calculate this obstacle's position in local space
+				Vector2D LocalPos = PointToLocalSpace(ClosestAgentInFront->Pos(),
+														m_pVehicle->Heading(),
+														m_pVehicle->Side(),
+														m_pVehicle->Pos());
+
+				// If the agent following is at the right of the current agent
+				if (LocalPos.y < 0)
+					SteeringForce = OffsetPursuit(ClosestAgentInFront, Vector2D(ClosestAgentInFront->Pos().x - 0.7, ClosestAgentInFront->Pos().y + 1));
+				else
+					SteeringForce = OffsetPursuit(ClosestAgentInFront, Vector2D(ClosestAgentInFront->Pos().x - 0.7, ClosestAgentInFront->Pos().y - 1)) ;
+			}
+			else
+			{
+				SteeringForce = Vector2D(2, 0);//Alignment(neighbors) + Wander();
+			}
+		}
 	}
+
+
+
+
+
+
+	//else
+	//{
+	//	Vehicle* ClosestAgentInFront = getCloserAgentInFront(neighbors);
+	//	//calculate this obstacle's position in local space
+	//	Vector2D LocalPos = PointToLocalSpace(ClosestAgentInFront->Pos(),
+	//								m_pVehicle->Heading(),
+	//								m_pVehicle->Side(),
+	//								m_pVehicle->Pos());
+
+	//	// If the agent he's on the left of the current agent
+	//	if (LocalPos.y >= 0)
+	//		SteeringForce = CohesionV(neighbors);
+	//	else
+	//		SteeringForce = CohesionV(neighbors);
+	//}
 
 	return SteeringForce;
 	//Vector2D SteeringForce;
@@ -1675,18 +1708,16 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 Vehicle* SteeringBehavior::getCloserAgentInFront(const vector<Vehicle*> &neighbors)
 {
 	Vector2D SteeringForce;
-	Vehicle* NearestAgent;
-	Vector2D ShortestVector;
+	Vehicle* NearestAgent = nullptr;
+	Vector2D ShortestVector = Vector2D(0,0);
 
 	std::vector<Vehicle*>::const_iterator curOb = neighbors.begin();
 
 	while (curOb != neighbors.end())
 	{
-		NearestAgent = (*curOb);
-
 		//make sure this agent isn't included in the calculations and that
 		//the agent being examined is close enough.
-		if (((*curOb) != m_pVehicle))
+		if (((*curOb) != m_pVehicle) && (*curOb)->IsTagged())
 		{
 			//calculate this obstacle's position in local space
 			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
@@ -1700,13 +1731,13 @@ Vehicle* SteeringBehavior::getCloserAgentInFront(const vector<Vehicle*> &neighbo
 			{
 				Vector2D ToAgent = (*curOb)->Pos() - m_pVehicle->Pos();
 				double RelativeHeading = m_pVehicle->Heading().Dot((*curOb)->Heading());
-				//we consider that a bird will only care of the bird
-				//right in front of him
+				////we consider that a bird will only care of the bird
+				////right in front of him
 				if ((ToAgent.Dot(m_pVehicle->Heading()) > 0) &&
-					(RelativeHeading < -0.95))  //acos(0.95)=18 degs
+					(RelativeHeading < -0.85))  //acos(0.95)=37 degs
 				{
 					// Check if this his the closest agent
-					if (ToAgent.Length() < ShortestVector.Length())
+					if (ShortestVector == Vector2D(0,0) || ToAgent.Length() < ShortestVector.Length())
 					{
 						// Save the position of the nearest agent
 						NearestAgent = (*curOb);
@@ -1759,7 +1790,7 @@ double SteeringBehavior::AverageSpeed(const vector<Vehicle*> &neighbors)
 	{
 		//make sure this agent isn't included in the calculations and that
 		//the agent being examined is close enough.
-		if (((*curOb) != m_pVehicle) && (*curOb)->IsTagged())
+		if (((*curOb) != m_pVehicle))
 		{
 			//calculate this obstacle's position in local space
 			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
@@ -1771,11 +1802,6 @@ double SteeringBehavior::AverageSpeed(const vector<Vehicle*> &neighbors)
 			//(in which case it can be ignored)
 			if (LocalPos.x >= 0)
 			{
-				/*ToAgent 
-				if ()
-				{
-
-				}*/
 				averageSpeed += (*curOb)->Speed();
 				++NeighborCount;
 			}
