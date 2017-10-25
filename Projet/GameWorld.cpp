@@ -55,6 +55,30 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
+	
+	if (agent_humain == 1) {
+
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
+		// Create the agent
+		Vehicle* pVehicle = new Vehicle(this,
+			SpawnPos,                 //initial position
+			RandFloat()*TwoPi,        //start rotation
+			Vector2D(0, 0),            //velocity
+			Prm.VehicleMass,          //mass
+			Prm.MaxSteeringForce,     //max force
+			Prm.MaxSpeed,             //max velocity
+			Prm.MaxTurnRatePerSecond, //max turn rate
+			Prm.VehicleScale);        //scale
+
+									  // Standard behavior
+
+		//add dans la liste de vehicule
+		m_Vehicles.push_back(pVehicle);
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pVehicle);
+
+	}
 
 	//// setup leaders agents
 	for (int a = 0; a < nb_leader; ++a)
@@ -404,6 +428,19 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
           }
         }
         break;
+
+
+	case 0x25 : // Left
+		break;
+
+	case 0x26: // Up
+		break;
+
+	case 0x27: // right
+		break;
+
+	case 0x28: // down
+		break;
 
   }//end switch
 }
