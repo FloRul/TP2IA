@@ -49,10 +49,10 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				m_bShowCellSpaceInfo(false)
 {
 	// Create local variable
-	int nb_agents = nb_agents + nb_poursuiveurs_l1 + nb_poursuiveurs_l2 + nb_poursuiveurs_h + agent_humain + nb_leader;
+	int nb_agents_total = nb_agents + nb_poursuiveurs_l1 + nb_poursuiveurs_l2 + nb_poursuiveurs_h + agent_humain + nb_leader;
 
 	//setup the spatial subdivision class
-	m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, nb_agents);
+	m_pCellSpace = new CellSpacePartition<Vehicle*>((double)cx, (double)cy, Prm.NumCellsX, Prm.NumCellsY, nb_agents_total);
 
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
@@ -92,7 +92,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	{
 		case 0:
 		{
-			for (int a = 0; a < nb_poursuiveurs; ++a)
+			for (int a = 0; a < nb_agents; ++a)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
@@ -147,7 +147,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			}
 			
 		
-			for (int a = 0; a < nb_poursuiveurs; ++a)
+			for (int a = 0; a < nb_poursuiveurs_l1; ++a)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
@@ -180,15 +180,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 			switch (nb_leader) 
 			{
-				case 1:
-					//Ajout de 1 leader
-					break;
-
-				case 2:
-					//ajout de 2 leader
-					break;
-
 				case 0:
+				{
 					//cas sans leader -> instanciation d'un leader arbitraire
 					Vehicle* leader = listeFollower.at(listeFollower.size() - 1);
 					leader->SetMaxSpeed(300.0);
@@ -196,6 +189,14 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					m_Vehicles.push_back(leader);
 					//add it to the cell subdivision
 					m_pCellSpace->AddEntity(leader);
+					break;
+				}
+				case 1:
+					//Ajout de 1 leader
+					break;
+
+				case 2:
+					//ajout de 2 leader
 					break;
 
 				default:
@@ -205,7 +206,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		}
 		case 2:
 		{
-			for (int a = 0; a < nb_poursuiveurs; ++a)
+			for (int a = 0; a < nb_agents; ++a)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
@@ -236,7 +237,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 }
 
 GameWorld::GameWorld(int cx, int cy):
-	GameWorld(cx, cy, 0, 0, 0, Prm.NumAgents, 15)
+	GameWorld(cx, cy, 0, 0, 0, Prm.NumAgents, 0, 0, 0, 15)
 {}
 
 //-------------------------------- dtor ----------------------------------
