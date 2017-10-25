@@ -29,6 +29,8 @@ public:
 		double    scale,
 		Vehicle* leaderf);
 	~FollowerAgents();
+	Vehicle* GetLeader();
+	void SetLeader(Vehicle* _leader);
 
 	void        Render();
 

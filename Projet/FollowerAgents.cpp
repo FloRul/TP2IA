@@ -32,14 +32,23 @@ FollowerAgents::FollowerAgents(GameWorld* world,
 	//Designe le comportement
 	//this->Steering()->ArriveOn();
 	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(2, 0));
-	this->Steering()->SeparationOn();
-	this->Steering()->Calculate();
+	this->Steering()->ArriveOn();
 
 }
 
 
 FollowerAgents::~FollowerAgents()
 { }
+
+//------------- Setter and Getter for the leader of the agent -----------------
+//-----------------------------------------------------------------------------
+Vehicle* FollowerAgents::GetLeader() {
+	return this->leader;
+}
+
+void FollowerAgents::SetLeader(Vehicle* _leader) {
+	if(_leader) this->leader = _leader;
+}
 
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
