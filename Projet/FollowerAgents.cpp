@@ -66,7 +66,7 @@ void FollowerAgents::SetLeader(Vehicle* _leader)
 }
 
 void FollowerAgents::UpdateSteering() {
-	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(0.5, 0));
+	this->Steering()->OffsetPursuitOn(this->leader, Vector2D(-2, 0));
 	this->Steering()->SeparationOn();
 }
 

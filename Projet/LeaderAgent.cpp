@@ -23,7 +23,7 @@ LeaderAgent::LeaderAgent(GameWorld* world,
 		scale)
 {
 	//Ajouter le steering behavior
-	//this->Steering()->
+	this->Steering()->WanderOn();
 }
 
 LeaderAgent::~LeaderAgent()
