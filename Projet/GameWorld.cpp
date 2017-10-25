@@ -20,6 +20,7 @@
 #include "resource.h"
 
 #include <list>
+
 using std::list;
 
 
@@ -117,12 +118,15 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		}
 		case 1:
 		{
+			
+			std::vector<FollowerAgents*> listeFollower;
+		
 			for (int a = 0; a < nb_poursuiveurs; ++a)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
 				// Create the agent
-				pVehicle = new FollowerAgents(this,
+				FollowerAgents* pFollow = new FollowerAgents(this,
 					SpawnPos,                 //initial position
 					RandFloat()*TwoPi,        //start rotation
 					Vector2D(0, 0),            //velocity
@@ -132,12 +136,18 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-											  // Standard behavior
-				pVehicle->Steering()->WanderOn();
-				//add dans la liste de vehicule
-				m_Vehicles.push_back(pVehicle);
+											  
+				//add dans la liste de vehicule et des follower
+				listeFollower.push_back(pFollow);
+				m_Vehicles.push_back(pFollow);
 				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pVehicle);
+				m_pCellSpace->AddEntity(pFollow);
+
+				//attribution des leaders respectifs
+				for (int i = 0; i < (int)listeFollower.size() - 2; i++)
+				{
+
+				}
 			}
 			break;
 		}
