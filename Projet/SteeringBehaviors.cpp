@@ -311,7 +311,6 @@ Vector2D SteeringBehavior::CalculatePrioritized()
     if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
   }
 
-
   if (On(arrive))
   {
     force = Arrive(m_pVehicle->World()->Crosshair(), m_Deceleration) * m_dWeightArrive;

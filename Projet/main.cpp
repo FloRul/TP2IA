@@ -102,7 +102,7 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
          ReleaseDC(hwnd, hdc); 
 		 if (comportement == 0)
 		 {
-			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, 0, 0, nb_poursuiveur, offset);
+			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, agent_humain, 0, nb_poursuiveur, offset);
 		 }
 		 else
 		 {
