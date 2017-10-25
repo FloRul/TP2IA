@@ -248,6 +248,7 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"Basique");
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"LeaderFollowing");
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"FlockingV");
+		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"Zombie Escape");
 		SendDlgItemMessage(hDlg, ID_CB, CB_SETCURSEL, comportement, 0);
 		
 		SendMessage(hDlg, CB_SHOWDROPDOWN, FALSE, 0);
