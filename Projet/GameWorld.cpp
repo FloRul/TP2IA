@@ -745,7 +745,7 @@ void GameWorld::Render()
   }  
 
 
-#ifndef CROSSHAIR
+/*#ifndef CROSSHAIR
 #define CROSSHAIR
   //and finally the crosshair
   gdi->RedPen();
@@ -753,7 +753,7 @@ void GameWorld::Render()
   gdi->Line(m_vCrosshair.x - 8, m_vCrosshair.y, m_vCrosshair.x + 8, m_vCrosshair.y);
   gdi->Line(m_vCrosshair.x, m_vCrosshair.y - 8, m_vCrosshair.x, m_vCrosshair.y + 8);
   gdi->TextAtPos(5, cyClient() - 20, "Click to move crosshair");
-#endif
+#endif*/
 
 
   //gdi->TextAtPos(cxClient() -120, cyClient() - 20, "Press R to reset");

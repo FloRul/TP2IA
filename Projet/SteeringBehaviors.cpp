@@ -741,6 +741,7 @@ Vector2D SteeringBehavior::Seek(Vector2D TargetPos)
   Vector2D diff = m_pVehicle->World()->Crosshair() - m_pVehicle->Pos();
   Vector2D fin = m_pVehicle->World()->Crosshair() + diff;
   m_pVehicle->World()->SetCrosshair(fin);
+  
 
 
 
