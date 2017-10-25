@@ -63,8 +63,8 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
     case WM_CREATE:
       {
 		// initial parameters
-		int nb_leader = 0;
-		int agent_humain = 0;
+		nb_leader = 1;
+		agent_humain = 0;
 
 		// Ask user to enter informations for the application
 		if (DialogBox(hinst, "DIALOG1", hwnd, (DLGPROC)Dialog1Proc) == DB_OK)
@@ -103,15 +103,8 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 
          //don't forget to release the DC
          ReleaseDC(hwnd, hdc); 
-		 if (comportement == 0)
-		 {
-			 g_GameWorld = new GameWorld(cxClient, cyClient, 0, agent_humain, 0, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
-		 }
-		 else
-		 {
-			 g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
-				 comportement, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
-		 }
+		 g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
+			 comportement, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);
          
          ChangeMenuState(hwnd, IDR_PRIORITIZED, MFS_CHECKED);
          ChangeMenuState(hwnd, ID_VIEW_FPS, MFS_CHECKED);
@@ -255,7 +248,7 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		// Settings des boutons radio
 		CheckDlgButton(hDlg, ID_ONE_LEADER, BST_CHECKED);
-		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_INDETERMINATE);
+		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_CHECKED);
 
 		// Settings default values for int
 		SetDlgItemText(hDlg, ID_NB_AGENT, std::to_string(Prm.NumAgents).c_str());
@@ -284,14 +277,26 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (HIWORD(wParam) == BN_CLICKED) {
 			switch (LOWORD(wParam)) {
-			case ID_ONE_LEADER:
-				nb_leader = 1; break;
-			case ID_TWO_LEADER:
-				nb_leader = 2; break;
-			case ID_HUMAN_AGENT:
-				agent_humain = 1; break;
-			case ID_NOT_HUMAN_AGENT:
-				agent_humain = 0; break;
+				case ID_ONE_LEADER:
+				{
+					nb_leader = 1;
+					break;
+				}
+				case ID_TWO_LEADER:
+				{
+					nb_leader = 2;
+					break;
+				}
+				case ID_HUMAN_AGENT:
+				{
+					agent_humain = 1;
+					break;
+				}
+				case ID_NOT_HUMAN_AGENT:
+				{
+					agent_humain = 0;
+					break;
+				}
 			}
 		}
 		if (LOWORD(wParam) == DB_OK || LOWORD(wParam) == IDCANCEL)
@@ -301,11 +306,11 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// get the number of stadard agent 
 			nb_agent = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
 			// get the number of pursuiver for the leader1
-			nb_poursuiveur1 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			nb_poursuiveur1 = GetDlgItemInt(hDlg, ID_NB_AGENT_FOLLOWER1, NULL, FALSE);
 			// get the number of pursuiver for the leader2
-			nb_poursuiveur2 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			nb_poursuiveur2 = GetDlgItemInt(hDlg, ID_NB_AGENT_FOLLOWER2, NULL, FALSE);
 			// get the number of pursuiver for the player
-			nb_poursuiveur3 = GetDlgItemInt(hDlg, ID_NB_AGENT, NULL, FALSE);
+			nb_poursuiveur3 = GetDlgItemInt(hDlg, ID_NB_AGENT_FOLLOWER3, NULL, FALSE);
 			// get the offset
 			offset = GetDlgItemInt(hDlg, ID_OFFSET, NULL, FALSE);
 
