@@ -27,24 +27,24 @@ using std::list;
 //------------------------------------------------------------------------
 GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	int comportement, int nb_poursuiveurs, int offset) :
-
-	m_cxClient(cx),
-	m_cyClient(cy),
-	m_bPaused(false),
-	m_vCrosshair(Vector2D(cxClient() / 2.0, cxClient() / 2.0)),
-	m_bShowWalls(false),
-	m_bShowObstacles(false),
-	m_bShowPath(false),
-	m_bShowWanderCircle(false),
-	m_bShowSteeringForce(false),
-	m_bShowFeelers(false),
-	m_bShowDetectionBox(false),
-	m_bShowFPS(true),
-	m_dAvFrameTime(0),
-	m_pPath(NULL),
-	m_bRenderNeighbors(false),
-	m_bViewKeys(false),
-	m_bShowCellSpaceInfo(false)
+				
+				m_cxClient(cx),
+				m_cyClient(cy),
+				m_bPaused(false),
+				m_vCrosshair(Vector2D(cxClient() / 2.0, cxClient() / 2.0)),
+				m_bShowWalls(false),
+				m_bShowObstacles(false),
+				m_bShowPath(false),
+				m_bShowWanderCircle(false),
+				m_bShowSteeringForce(false),
+				m_bShowFeelers(false),
+				m_bShowDetectionBox(false),
+				m_bShowFPS(true),
+				m_dAvFrameTime(0),
+				m_pPath(NULL),
+				m_bRenderNeighbors(false),
+				m_bViewKeys(false),
+				m_bShowCellSpaceInfo(false)
 {
 	// Create local variable
 	int nb_agents = nb_poursuiveurs + agent_humain + nb_leader;
@@ -60,7 +60,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	{
 		//determine a random starting position
 		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-			cy / 2.0 + RandomClamped()*cy / 2.0);
+									cy / 2.0 + RandomClamped()*cy / 2.0);
 
 		// Create the agent
 		LeaderAgent* pLeader = new LeaderAgent(this,
@@ -83,21 +83,18 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	}
 
 	// setup basic agents
-
-	switch (comportement)
+	for (int a = 0; a < nb_poursuiveurs; ++a)
 	{
+		//determine a random starting position
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
 
-		//----------Comportement basique---------------------------------
-		//---------------------------------------------------------------
-		case 0:
+		Vehicle* pVehicle;
+
+		switch (comportement)
 		{
-			for (int a = 0; a < nb_leader; ++a)
+			case 0:
 			{
-				//determine a random starting position
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-
-				Vehicle* pVehicle;
 				// Create the agent
 				pVehicle = new Vehicle(this,
 					SpawnPos,                 //initial position
@@ -111,27 +108,12 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 				// Standard behavior
 				pVehicle->Steering()->WanderOn();
-				m_Vehicles.push_back(pVehicle);
-
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pVehicle);
+				break;
 			}
-			break;
-		}
-
-		//-----------comportement followingAgent--------------------------
-		//----------------------------------------------------------------
-		case 1:
-		{
-			for (int a = 0; a < nb_poursuiveurs; ++a)
+			case 1:
 			{
-				FollowerAgents* fAgent;
-				//determine a random starting position
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-
 				// Create the agent
-				fAgent = new FollowerAgents(this,
+				pVehicle = new FollowerAgents(this,
 					SpawnPos,                 //initial position
 					RandFloat()*TwoPi,        //start rotation
 					Vector2D(0, 0),            //velocity
@@ -144,30 +126,10 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 				// Leader following behavior
 				// TODO
-				m_FollowerAgents.push_back(fAgent);
+				break;
 			}
-
-			////each followingagents has to have his next neighboor as leader
-			//for each (FollowerAgents _fAgents in m_FollowerAgents)
-			//{
-			//	_fAgents.SetLeader(m_FollowerAgents.at(1));
-			//	//add it to the cell subdivision
-			//	m_pCellSpace->AddEntity(fAgents);
-			//}
-			break;
-
-		}
-
-		//-------------comportement FlockingV--------------------------
-		//-------------------------------------------------------------
-		case 2:
-		{
-			for (int a = 0; a < nb_poursuiveurs; ++a)
+			case 2:
 			{
-				Vehicle* pVehicle;
-				//determine a random starting position
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
 				// Create the agent
 				pVehicle = new Vehicle(this,
 					SpawnPos,                 //initial position
@@ -175,19 +137,22 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Vector2D(0, 0),            //velocity
 					Prm.VehicleMass,          //mass
 					Prm.MaxSteeringForce,     //max force
-					Prm.MaxSpeed - 200,             //max velocity
+					Prm.MaxSpeed-200,             //max velocity
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
 				// FlokingV behavior
 				pVehicle->Steering()->FlockingVOn();
-				m_Vehicles.push_back(pVehicle);
-
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pVehicle);
+				break;
 			}
-			break;
+			default:
+				pVehicle->Steering()->WanderOn();
 		}
+
+		m_Vehicles.push_back(pVehicle);
+
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pVehicle);
 	}
 }
 

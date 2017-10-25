@@ -10,6 +10,7 @@
 using std::vector;
 using std::list;
 
+double couleur;
 
 //----------------------------- ctor -------------------------------------
 //------------------------------------------------------------------------
@@ -44,6 +45,7 @@ Vehicle::Vehicle(GameWorld* world,
   //set up the smoother
   m_pHeadingSmoother = new Smoother<Vector2D>(Prm.NumSamplesForSmoothing, Vector2D(0.0, 0.0)); 
   
+  couleur = 0;
  
 }
 
@@ -113,6 +115,11 @@ void Vehicle::Update(double time_elapsed)
   }
 }
 
+void Vehicle::changeCouleur(double c)
+{
+	couleur = c;
+}
+
 
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
@@ -131,7 +138,19 @@ void Vehicle::Render()
 
   else
   {
-    gdi->BluePen();
+	  if (couleur == 0)
+	  {
+		  gdi->BluePen();
+	  }
+	  else if (couleur == 1)
+	  {
+		  gdi->RedPen();
+	  }
+	  else
+	  {
+		  gdi->GreenPen();
+	  }
+	  
   }
 
   if (Steering()->isInterposeOn())
