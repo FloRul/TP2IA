@@ -229,6 +229,11 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				m_pCellSpace->AddEntity(pVehicle);
 			}
 			break;
+		case 3:
+		{
+			// TODO : Greg. Ne pas toucher.
+			break;
+		}
 		}
 		/*default:
 			pVehicle->Steering()->WanderOn();*/

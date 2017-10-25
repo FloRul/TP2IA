@@ -224,9 +224,7 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
 void LeaderFollowingField(HWND hDlg, bool enable)
 {
 	// Enabled radio buttons
-	HWND buttonNbLeader = GetDlgItem(hDlg, ID_ZERO_LEADER);
-	EnableWindow(buttonNbLeader, enable);
-	buttonNbLeader = GetDlgItem(hDlg, ID_ONE_LEADER);
+	HWND buttonNbLeader = GetDlgItem(hDlg, ID_ONE_LEADER);
 	EnableWindow(buttonNbLeader, enable);
 	buttonNbLeader = GetDlgItem(hDlg, ID_TWO_LEADER);
 	EnableWindow(buttonNbLeader, enable);
@@ -250,16 +248,20 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"Basique");
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"LeaderFollowing");
 		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"FlockingV");
+		SendDlgItemMessage(hDlg, ID_CB, CB_ADDSTRING, 0, (LONG)"Zombie Escape");
 		SendDlgItemMessage(hDlg, ID_CB, CB_SETCURSEL, comportement, 0);
 		
 		SendMessage(hDlg, CB_SHOWDROPDOWN, FALSE, 0);
 
 		// Settings des boutons radio
-		CheckDlgButton(hDlg, ID_ZERO_LEADER, BST_CHECKED);
+		CheckDlgButton(hDlg, ID_ONE_LEADER, BST_CHECKED);
 		CheckDlgButton(hDlg, ID_NOT_HUMAN_AGENT, BST_INDETERMINATE);
 
 		// Settings default values for int
 		SetDlgItemText(hDlg, ID_NB_AGENT, std::to_string(Prm.NumAgents).c_str());
+		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER1, "0");
+		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER2, "0");
+		SetDlgItemText(hDlg, ID_NB_AGENT_FOLLOWER3, "0");
 		SetDlgItemText(hDlg, ID_OFFSET, "10");
 		return TRUE;
 	}
@@ -282,8 +284,6 @@ BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (HIWORD(wParam) == BN_CLICKED) {
 			switch (LOWORD(wParam)) {
-			case ID_ZERO_LEADER:
-				nb_leader = 0; break;
 			case ID_ONE_LEADER:
 				nb_leader = 1; break;
 			case ID_TWO_LEADER:
