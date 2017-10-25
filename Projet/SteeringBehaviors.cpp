@@ -1605,21 +1605,54 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 			Vehicle* ClosestAgentInFront = getCloserAgentInFront(neighbors);
 			if (ClosestAgentInFront != nullptr)
 			{
-				//calculate this obstacle's position in local space
-				Vector2D LocalPos = PointToLocalSpace(ClosestAgentInFront->Pos(),
+				//calculate this agent's position in local space
+				Vector2D LocalPosAgent = PointToLocalSpace(ClosestAgentInFront->Pos(),
 														m_pVehicle->Heading(),
 														m_pVehicle->Side(),
 														m_pVehicle->Pos());
+				//look if an agent his blocking the view
+				Vehicle* ClosestAgentBlockingView = getCloserAgentBlokingView(neighbors);
+				Vector2D ToFollow;
 
 				// If the agent following is at the right of the current agent
-				if (LocalPos.y < 0)
-					SteeringForce = OffsetPursuit(ClosestAgentInFront, Vector2D(ClosestAgentInFront->Pos().x - 0.7, ClosestAgentInFront->Pos().y + 1));
+				if (ClosestAgentBlockingView == nullptr)
+				{
+					if (LocalPosAgent.y >= 0)
+					{
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 5);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 5);
+						//SteeringForce = Arrive(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y + 5), fast);
+					}
+					else
+					{
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
+						//SteeringForce = Arrive(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y - 5), fast);
+					}
+				}
 				else
-					SteeringForce = OffsetPursuit(ClosestAgentInFront, Vector2D(ClosestAgentInFront->Pos().x - 0.7, ClosestAgentInFront->Pos().y - 1)) ;
+				{
+					if (LocalPosAgent.y < 0)
+					{
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 10);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 10);
+						//SteeringForce = Seek(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y + 10));
+					}
+					else
+					{
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
+						//SteeringForce = Seek(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y - 10));
+					}
+				}
+				SteeringForce = VectorToWorldSpace(ToFollow,
+								m_pVehicle->Heading(),
+								m_pVehicle->Side());
+				
 			}
 			else
 			{
-				SteeringForce = Vector2D(2, 0);//Alignment(neighbors) + Wander();
+				SteeringForce = Vector2D(2, 0); //Alignment(neighbors) + Wander();//Vector2D(2, 0);//Alignment(neighbors) + Wander();
 			}
 		}
 	}
@@ -1703,6 +1736,48 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 	//	// Appliquer une pondération surement aprés tests successifs.
 	//	return rule1 * 5 + rule2 * 5 + rule3 * 5;
 	//}
+}
+
+Vehicle* SteeringBehavior::getCloserAgentBlokingView(const vector<Vehicle*> &neighbors)
+{
+	Vector2D SteeringForce;
+	Vehicle* NearestAgent = nullptr;
+	Vector2D ShortestVector = Vector2D(0, 0);
+
+	std::vector<Vehicle*>::const_iterator curOb = neighbors.begin();
+
+	while (curOb != neighbors.end())
+	{
+		//make sure this agent isn't included in the calculations and that
+		//the agent being examined is close enough.
+		if (((*curOb) != m_pVehicle) && (*curOb)->IsTagged())
+		{
+			//calculate this obstacle's position in local space
+			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
+				m_pVehicle->Heading(),
+				m_pVehicle->Side(),
+				m_pVehicle->Pos());
+
+			//we consider that a bird can't see behind him. 
+			//(in which case it can be ignored)
+			if (LocalPos.x >= 0)
+			{
+				Vector2D ToAgent = (*curOb)->Pos() - m_pVehicle->Pos();
+				double RelativeHeading = m_pVehicle->Heading().Dot((*curOb)->Heading());
+				////we consider that a bird will only care of the bird
+				////right in front of him
+				if ((ToAgent.Dot(m_pVehicle->Heading()) > 0) &&
+					(RelativeHeading < -0.97))  //acos(0.95)=37 degs
+				{
+					// Save the position of the nearest agent
+					NearestAgent = (*curOb);
+					ShortestVector = ToAgent;
+				}
+			}
+		}
+		curOb++;
+	}
+	return NearestAgent;
 }
 
 Vehicle* SteeringBehavior::getCloserAgentInFront(const vector<Vehicle*> &neighbors)

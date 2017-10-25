@@ -262,7 +262,7 @@ private:
 	double AverageSpeed(const std::vector<Vehicle*> &neighbors);
 	Vehicle* getCloserAgent(const std::vector<Vehicle*> &neighbors);
 	Vehicle* getCloserAgentInFront(const std::vector<Vehicle*> &neighbors);
-
+	Vehicle* getCloserAgentBlokingView(const std::vector<Vehicle*> &neighbors);
 
 	//the following three are the same as above but they use cell-space
 	//partitioning to find the neighbors
