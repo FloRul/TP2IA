@@ -180,12 +180,30 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				//add it to the cell subdivision
 				m_pCellSpace->AddEntity(tempFAgent);
 			}
-			Vehicle* leader = listeFollower.at(listeFollower.size() - 1);
-			leader->SetMaxSpeed(150.0);
-			leader->Steering()->WanderOn();
-			m_Vehicles.push_back(leader);
-			//add it to the cell subdivision
-			m_pCellSpace->AddEntity(leader);
+
+			switch (nb_leader) 
+			{
+				case 1:
+					//Ajout de 1 leader
+					break;
+
+				case 2:
+					//ajout de 2 leader
+					break;
+
+				case 0:
+					//cas sans leader -> instanciation d'un leader arbitraire
+					Vehicle* leader = listeFollower.at(listeFollower.size() - 1);
+					leader->SetMaxSpeed(300.0);
+					leader->Steering()->WanderOn();
+					m_Vehicles.push_back(leader);
+					//add it to the cell subdivision
+					m_pCellSpace->AddEntity(leader);
+					break;
+
+				default:
+					break;
+			}
 			break;
 		}
 		case 2:
