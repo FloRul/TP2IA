@@ -161,18 +161,26 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.VehicleScale);        //scale
 
 											  
-				//add dans la liste de vehicule et des follower
+				//add dans la liste des followers
 				listeFollower.push_back(pFollow);
-				m_Vehicles.push_back(pFollow);
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pFollow);
-
-				//attribution des leaders respectifs
-				for (int i = 0; i < (int)listeFollower.size() - 2; i++)
-				{
-
-				}
+				
 			}
+			for (int i = 0; i < (int)listeFollower.size() - 1; i++)
+			{
+				FollowerAgents* tempFAgent = listeFollower.at(i);
+				tempFAgent->SetLeader(listeFollower.at(i + 1));
+				tempFAgent->UpdateSteering();
+
+				m_Vehicles.push_back(tempFAgent);
+				//add it to the cell subdivision
+				m_pCellSpace->AddEntity(tempFAgent);
+			}
+			Vehicle* leader = listeFollower.at(listeFollower.size() - 1);
+			leader->SetMaxSpeed(150.0);
+			leader->Steering()->WanderOn();
+			m_Vehicles.push_back(leader);
+			//add it to the cell subdivision
+			m_pCellSpace->AddEntity(leader);
 			break;
 		}
 		case 2:
@@ -201,8 +209,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			}
 			break;
 		}
-		default:
-			pVehicle->Steering()->WanderOn();
+		/*default:
+			pVehicle->Steering()->WanderOn();*/
 	}
 	
 }
