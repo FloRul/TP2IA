@@ -56,6 +56,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 	
 	if (agent_humain == 1) {
+		
+		m_aHuman = true;
 
 		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 			cy / 2.0 + RandomClamped()*cy / 2.0);
@@ -77,6 +79,9 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		//add it to the cell subdivision
 		m_pCellSpace->AddEntity(pVehicle);
 
+	}
+	else {
+		m_aHuman = false;
 	}
 
 	//// setup leaders agents
@@ -421,15 +426,27 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
 
 
 	case 0x25 : // Left
+		if (m_aHuman) {
+
+		}
 		break;
 
 	case 0x26: // Up
+		if (m_aHuman) {
+
+		}
 		break;
 
 	case 0x27: // right
+		if (m_aHuman) {
+
+		}
 		break;
 
 	case 0x28: // down
+		if (m_aHuman) {
+
+		}
 		break;
 
   }//end switch

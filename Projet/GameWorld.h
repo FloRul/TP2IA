@@ -59,6 +59,8 @@ private:
   //set true to pause the motion
   bool                          m_bPaused;
 
+  bool							m_aHuman;
+
   //local copy of client window dimensions
   int                           m_cxClient,
                                 m_cyClient;
