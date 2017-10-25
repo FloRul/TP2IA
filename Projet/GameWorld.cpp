@@ -48,6 +48,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				m_bViewKeys(false),
 				m_bShowCellSpaceInfo(false)
 {
+	nb_leader = 2;
 	// Create local variable
 	int nb_agents_total = nb_agents + nb_poursuiveurs_l1 + nb_poursuiveurs_l2 + nb_poursuiveurs_h + agent_humain + nb_leader;
 
@@ -131,6 +132,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			LeaderAgent* pLeader1;
 			switch (nb_leader) 
 			{
+				//---------------- 1 seul leader ---------------------------
+				//----------------------------------------------------------
 				case 1:
 					for (int i = 0; i < nb_leader; i++)
 					{
@@ -178,7 +181,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 						listeFollowerL1.push_back(pFollow);
 					}
 					//Relier les agents entre eux puis le dernier au leader
-					for (int i = 0; i < (int)listeFollowerL1.size() - 1; i++)
+					for (int i = 0; i < (int)listeFollowerL1.size()-1; i++)
 					{
 						FollowerAgents* tempFAgent = listeFollowerL1.at(i);
 						tempFAgent->SetLeader(listeFollowerL1.at(i + 1));
@@ -186,8 +189,11 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					}
 
 					listeFollowerL1.at(listeFollowerL1.size() - 1)->SetLeader(m_Leaders.at(0));
+					listeFollowerL1.at(listeFollowerL1.size() - 1)->UpdateSteering();
 					break;
-
+				
+				//----------------------2 Leaders -----------------------------------------
+				//-------------------------------------------------------------------------
 				case 2:
 					//ajout de 2 leader
 					for (int i = 0; i < nb_leader; i++)
@@ -244,6 +250,8 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 						m_pCellSpace->AddEntity(tempFAgent);
 					}
 					listeFollowerL1.at(listeFollowerL1.size() - 1)->SetLeader(m_Leaders.at(0));
+					listeFollowerL1.at(listeFollowerL1.size() - 1)->UpdateSteering();
+					
 					//-----------------------------------------------------------------------
 
 					//Ajout des followers L2
@@ -277,8 +285,10 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 						tempFAgent->SetLeader(listeFollowerL2.at(i + 1));
 						tempFAgent->UpdateSteering();
 					}
-					listeFollowerL1.at(listeFollowerL1.size() - 1)->SetLeader(m_Leaders.at(0));
-					listeFollowerL1.at(listeFollowerL2.size() - 1)->SetLeader(m_Leaders.at(2));
+					listeFollowerL2.at(listeFollowerL2.size() - 1)->SetLeader(m_Leaders.at(1));
+					listeFollowerL2.at(listeFollowerL2.size() - 1)->UpdateSteering();
+					break;
+				default:
 					break;
 				}
 				break;
