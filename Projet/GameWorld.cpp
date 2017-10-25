@@ -56,7 +56,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
 
 
-	//if (agent_humain==1) {
+	if (agent_humain==1) {
 		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 			cy / 2.0 + RandomClamped()*cy / 2.0);
 
@@ -77,7 +77,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		//add it to the cell subdivision
 		m_pCellSpace->AddEntity(pVehicle);
 
-	//}
+	}
 
 	if(comportement != 0)
 
