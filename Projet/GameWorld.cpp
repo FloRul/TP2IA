@@ -56,35 +56,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 	double border = 30;
 	m_pPath = new Path(5, border, border, cx - border, cy - border, true);
-	
-	if (agent_humain != 1) {
-		
-		m_aHuman = true;
 
-		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-			cy / 2.0 + RandomClamped()*cy / 2.0);
-		// Create the agent
-		Vehicle* pVehicle = new Vehicle(this,
-			SpawnPos,                 //initial position
-			RandFloat()*TwoPi,        //start rotation
-			Vector2D(0, 0),            //velocity
-			Prm.VehicleMass,          //mass
-			Prm.MaxSteeringForce,     //max force
-			Prm.MaxSpeed,             //max velocity
-			Prm.MaxTurnRatePerSecond, //max turn rate
-			Prm.VehicleScale);        //scale
-
-									  // Standard behavior
-
-		//add dans la liste de vehicule
-		m_Vehicles.push_back(pVehicle);
-		//add it to the cell subdivision
-		m_pCellSpace->AddEntity(pVehicle);
-
-	}
-	else {
-		m_aHuman = false;
-	}
 
 	// setup basic agents
 	Vehicle* pVehicle;
@@ -92,8 +64,10 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	{
 		case 0:
 		{
+			
 			for (int a = 0; a < nb_agents; ++a)
 			{
+
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
 				// Create the agent
@@ -107,8 +81,17 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-				// Standard behavior
-				pVehicle->Steering()->WanderOn();
+				if (!m_aHuman & agent_humain!=1) {
+					m_aHuman = true;
+					m_HumanAgent = pVehicle;
+				}
+				else {
+					// Standard behavior
+					pVehicle->Steering()->WanderOn();
+				}
+
+				
+				
 				//add dans la liste de vehicule
 				m_Vehicles.push_back(pVehicle);
 				//add it to the cell subdivision
@@ -137,6 +120,11 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
+				if (!m_aHuman & agent_humain != 1) {
+					m_aHuman = true;
+					m_HumanAgent = pLeader;
+				}
+				
 											  // Leader behavior
 											  // TODO
 
@@ -221,6 +209,12 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
+				if (!m_aHuman & agent_humain != 1) {
+					m_aHuman = true;
+					m_HumanAgent = pVehicle;
+				}
+				
+
 				// FlokingV behavior
 				pVehicle->Steering()->FlockingVOn();
 				//add dans la liste de vehicule
@@ -229,11 +223,6 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				m_pCellSpace->AddEntity(pVehicle);
 			}
 			break;
-		case 3:
-		{
-			// TODO : Greg. Ne pas toucher.
-			break;
-		}
 		}
 		/*default:
 			pVehicle->Steering()->WanderOn();*/
@@ -467,36 +456,36 @@ void GameWorld::HandleKeyPresses(WPARAM wParam)
 	case 0x25 : // Left
 		if (m_aHuman) {
 			
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x - 20;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
-			m_Vehicles[0]->Steering()->SeekOn();
+			m_vCrosshair.x = (double)m_HumanAgent->Pos().x - 20;
+			m_vCrosshair.y = (double)m_HumanAgent->Pos().y;
+			m_HumanAgent->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x26: // Up
 		if (m_aHuman) {
 			
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y - 20;
-			m_Vehicles[0]->Steering()->SeekOn();
+			m_vCrosshair.x = (double)m_HumanAgent->Pos().x;
+			m_vCrosshair.y = (double)m_HumanAgent->Pos().y - 20;
+			m_HumanAgent->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x27: // right
 		if (m_aHuman) {
 
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x + 20;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y;
-			m_Vehicles[0]->Steering()->SeekOn();
+			m_vCrosshair.x = (double)m_HumanAgent->Pos().x + 20;
+			m_vCrosshair.y = (double)m_HumanAgent->Pos().y;
+			m_HumanAgent->Steering()->SeekOn();
 		}
 		break;
 
 	case 0x28: // down
 		if (m_aHuman) {
 
-			m_vCrosshair.x = (double)m_Vehicles[0]->Pos().x;
-			m_vCrosshair.y = (double)m_Vehicles[0]->Pos().y + 20 ;
-			m_Vehicles[0]->Steering()->SeekOn();
+			m_vCrosshair.x = (double)m_HumanAgent->Pos().x;
+			m_vCrosshair.y = (double)m_HumanAgent->Pos().y + 20 ;
+			m_HumanAgent->Steering()->SeekOn();
 		}
 		break;
 

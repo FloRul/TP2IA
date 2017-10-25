@@ -59,7 +59,9 @@ private:
   //set true to pause the motion
   bool                          m_bPaused;
 
-  bool							m_aHuman;
+  bool							m_aHuman = false;
+
+  Vehicle*						m_HumanAgent = nullptr;
 
   //local copy of client window dimensions
   int                           m_cxClient,
