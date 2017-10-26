@@ -134,13 +134,18 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
+				// Set the MaxSpeed.
+				pLeader->SetMaxSpeed(70);
+
 				if (!m_aHuman & agent_humain == 1) {
 					m_aHuman = true;
 					m_HumanAgent = pLeader;
 				}
+				else
+				{
+					pLeader->StartBehavior();
+				}
 
-				// Set the MaxSpeed.
-				pLeader->SetMaxSpeed(70);
 				// add the leader into the vector
 				m_Vehicles.push_back(pLeader);
 				//add it to the cell subdivision

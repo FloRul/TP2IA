@@ -29,5 +29,6 @@ public:
 
 	void        Render();
 
+	void		StartBehavior();
 };
 
