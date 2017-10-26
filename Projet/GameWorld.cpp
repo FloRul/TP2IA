@@ -203,6 +203,9 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 			// FlokingV behavior
 			pVehicle->Steering()->FlockingVOn();
 
+			// Set the MaxSpeed.
+			pVehicle->SetMaxSpeed(90);
+
 			if (!m_aHuman && agent_humain == 1) {
 				m_aHuman = true;
 				pVehicle->SetHuman(m_aHuman);

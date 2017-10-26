@@ -1677,30 +1677,26 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 				{
 					if (LocalPosAgent.y >= 0)
 					{
-						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 5);
-						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 5);
-						//SteeringForce = Arrive(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y + 5), fast);
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 2);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 2);
 					}
 					else
 					{
-						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
-						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
-						//SteeringForce = Arrive(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y - 5), fast);
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 2);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 2);
 					}
 				}
 				else
 				{
 					if (LocalPosAgent.y < 0)
 					{
-						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 10);
-						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 10);
-						//SteeringForce = Seek(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y + 10));
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y + 2);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y + 2);
 					}
 					else
 					{
-						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
-						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 10);
-						//SteeringForce = Seek(Vector2D(ClosestAgentInFront->Pos().x - 1, ClosestAgentInFront->Pos().y - 10));
+						Vector2D toFollow(LocalPosAgent.x - 1, LocalPosAgent.y - 2);
+						ToFollow = Vector2D(LocalPosAgent.x - 1, LocalPosAgent.y - 2);
 					}
 				}
 				SteeringForce = VectorToWorldSpace(ToFollow,
@@ -1710,7 +1706,7 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 			}
 			else
 			{
-				SteeringForce = Vector2D(2, 0); //Alignment(neighbors) + Wander();//Vector2D(2, 0);//Alignment(neighbors) + Wander();
+				SteeringForce = Vector2D(2, 0);
 			}
 		}
 	}
@@ -1879,8 +1875,6 @@ Vector2D SteeringBehavior::ZombiesLike(const Vehicle* survivor,
 	m_pVehicle->World()->TagObstaclesWithinViewRange(m_pVehicle, m_dDBoxLength);
 
 	std::vector<BaseGameEntity*>::const_iterator curOb = obstacles.begin();
-	std::vector<BaseGameEntity*>::const_iterator closest;
-
 
 	while (curOb != obstacles.end() && !find)
 	{
@@ -1921,7 +1915,6 @@ Vector2D SteeringBehavior::ZombiesLike(const Vehicle* survivor,
 					{
 						ip = cX + SqrtPart;
 					}
-
 					find = true;
 				}
 			}

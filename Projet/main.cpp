@@ -232,8 +232,6 @@ void LeaderFollowingField(HWND hDlg, bool enable)
 	EnableWindow(TextFieldNbLeader, enable);
 	TextFieldNbLeader = GetDlgItem(hDlg, ID_NB_AGENT_FOLLOWER2);
 	EnableWindow(TextFieldNbLeader, enable);
-	TextFieldNbLeader = GetDlgItem(hDlg, ID_NB_AGENT_FOLLOWER3);
-	EnableWindow(TextFieldNbLeader, enable);
 }
 
 BOOL APIENTRY Dialog1Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
