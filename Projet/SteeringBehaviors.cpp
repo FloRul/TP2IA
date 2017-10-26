@@ -228,7 +228,6 @@ Vector2D SteeringBehavior::CalculatePrioritized()
 
     if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
   }
-
   
   if (On(flee))
   {
@@ -237,7 +236,14 @@ Vector2D SteeringBehavior::CalculatePrioritized()
     if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
   }
 
+  if (On(zombie))
+  {
+	  assert(m_pTargetAgent1 && "Evade target not assigned");
 
+	  force = ZombiesLike(m_pTargetAgent1, m_pVehicle->World()->Obstacles()) * m_dWeightZombie;
+
+	  if (!AccumulateForce(m_vSteeringForce, force)) return m_vSteeringForce;
+  }
  
   //these next three can be combined for flocking behavior (wander is
   //also a good behavior to add into this mix)
@@ -396,6 +402,13 @@ Vector2D SteeringBehavior::CalculateWeightedSum()
             m_dWeightObstacleAvoidance;
   }
 
+  if (On(zombie))
+  {
+	  assert(m_pTargetAgent1 && "Evade target not assigned");
+
+	  m_vSteeringForce += ZombiesLike(m_pTargetAgent1, m_pVehicle->World()->Obstacles()) * m_dWeightZombie;
+  }
+
   if (On(evade))
   {
     assert(m_pTargetAgent1 && "Evade target not assigned");
@@ -548,6 +561,31 @@ Vector2D SteeringBehavior::CalculateDithered()
       
       return m_vSteeringForce;
     }
+  }
+  if (On(zombie) && RandFloat() < Prm.prObstacleAvoidance)
+  {
+	  m_vSteeringForce += ObstacleAvoidance(m_pVehicle->World()->Obstacles()) *
+		  m_dWeightObstacleAvoidance / Prm.prObstacleAvoidance;
+
+	  if (!m_vSteeringForce.isZero())
+	  {
+		  m_vSteeringForce.Truncate(m_pVehicle->MaxForce());
+
+		  return m_vSteeringForce;
+	  }
+  }
+
+
+  if (On(zombie) && RandFloat() < Prm.prFlee)
+  {
+	  m_vSteeringForce += ZombiesLike(m_pTargetAgent1, m_pVehicle->World()->Obstacles()) * m_dWeightZombie / Prm.prFlee;
+
+	  if (!m_vSteeringForce.isZero())
+	  {
+		  m_vSteeringForce.Truncate(m_pVehicle->MaxForce());
+
+		  return m_vSteeringForce;
+	  }
   }
 
   if (!isSpacePartitioningOn())
@@ -1677,85 +1715,7 @@ Vector2D SteeringBehavior::FlockingV(const vector<Vehicle*> &neighbors)
 		}
 	}
 
-
-
-
-
-
-	//else
-	//{
-	//	Vehicle* ClosestAgentInFront = getCloserAgentInFront(neighbors);
-	//	//calculate this obstacle's position in local space
-	//	Vector2D LocalPos = PointToLocalSpace(ClosestAgentInFront->Pos(),
-	//								m_pVehicle->Heading(),
-	//								m_pVehicle->Side(),
-	//								m_pVehicle->Pos());
-
-	//	// If the agent he's on the left of the current agent
-	//	if (LocalPos.y >= 0)
-	//		SteeringForce = CohesionV(neighbors);
-	//	else
-	//		SteeringForce = CohesionV(neighbors);
-	//}
-
 	return SteeringForce;
-	//Vector2D SteeringForce;
-	//int flag1 = 0;
-
-	//// Call rule n°1
-	//Vector2D rule1 = CohesionV(neighbors);
-	//// Call rule n°2
-	//Vector2D rule2 = OffsetVision(neighbors);
-	//// Call rule n°3
-	//Vector2D rule3 = SlowDown(neighbors);
-
-	//// if all the previous conditions are fill,
-	//// the agent adapt his speed and heading with his neighborhood
-	//if (rule1 == Vector2D(0,0) && rule2 == Vector2D(0,0) &&
-	//	rule3 == Vector2D(0,0))
-	//{
-	//	// Compute the average speed of his neighborhood
-	//	//used to count the number of vehicles in the neighborhood
-	//	int    NeighborInFrontCount = 0;
-
-	//	std::vector<Vehicle*>::const_iterator curOb = neighbors.begin();
-	//	std::vector<Vehicle*> agentsInFront;
-
-	//	while (curOb != neighbors.end())
-	//	{
-	//		//make sure this agent isn't included in the calculations and that
-	//		//the agent being examined is close enough.
-	//		if (((*curOb) != m_pVehicle) && (*curOb)->IsTagged())
-	//		{
-	//			//calculate this obstacle's position in local space
-	//			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
-	//				m_pVehicle->Heading(),
-	//				m_pVehicle->Side(),
-	//				m_pVehicle->Pos());
-
-	//			//we consider that a bird can't see behind him. 
-	//			//(in which case it can be ignored)
-	//			if (LocalPos.x > 0)
-	//			{
-	//				NeighborInFrontCount++;
-	//			}
-	//		}
-	//		++curOb;
-	//	}
-	//	if (NeighborInFrontCount == 0)
-	//	{
-	//		return Wander();
-	//	}
-	//	else
-	//	{
-	//		return OffsetPursuit(getCloserAgentInFront(neighbors), Vector2D(3,30));
-	//	}
-	//}
-	//else
-	//{
-	//	// Appliquer une pondération surement aprés tests successifs.
-	//	return rule1 * 5 + rule2 * 5 + rule3 * 5;
-	//}
 }
 
 Vehicle* SteeringBehavior::getCloserAgentBlokingView(const vector<Vehicle*> &neighbors)
@@ -1907,13 +1867,77 @@ double SteeringBehavior::AverageSpeed(const vector<Vehicle*> &neighbors)
 	return averageSpeed;
 }
 
-//for receiving keyboard input from user
-
-
-Vector2D SteeringBehavior::FollowLeaderWithOffset(const FollowerAgents* leader) 
+Vector2D SteeringBehavior::ZombiesLike(const Vehicle* survivor,
+					const vector<BaseGameEntity*>& obstacles)
 {
+	Vector2D SteeringForce;
+	Vector2D toSurvivor = survivor->Pos() - m_pVehicle->Pos();
+	m_dDBoxLength = toSurvivor.Length();
+	bool find = false;
 
-	return Vector2D();
+	//tag all obstacles within range of the box for processing
+	m_pVehicle->World()->TagObstaclesWithinViewRange(m_pVehicle, m_dDBoxLength);
+
+	std::vector<BaseGameEntity*>::const_iterator curOb = obstacles.begin();
+	std::vector<BaseGameEntity*>::const_iterator closest;
+
+
+	while (curOb != obstacles.end() && !find)
+	{
+		//if the obstacle has been tagged within range proceed
+		if ((*curOb)->IsTagged())
+		{
+			//calculate this obstacle's position in local space
+			Vector2D LocalPos = PointToLocalSpace((*curOb)->Pos(),
+				m_pVehicle->Heading(),
+				m_pVehicle->Side(),
+				m_pVehicle->Pos());
+
+			//if the local position has a negative x value then it must lay
+			//behind the agent. (in which case it can be ignored)
+			if (LocalPos.x >= 0)
+			{
+				//if the distance from the x axis to the object's position is less
+				//than its radius + half the width of the detection box then there
+				//is a potential intersection.
+				double ExpandedRadius = (*curOb)->BRadius() + m_pVehicle->BRadius();
+
+				if (fabs(LocalPos.y) < ExpandedRadius)
+				{
+					//now to do a line/circle intersection test. The center of the 
+					//circle is represented by (cX, cY). The intersection points are 
+					//given by the formula x = cX +/-sqrt(r^2-cY^2) for y=0. 
+					//We only need to look at the smallest positive value of x because
+					//that will be the closest point of intersection.
+					double cX = LocalPos.x;
+					double cY = LocalPos.y;
+
+					//we only need to calculate the sqrt part of the above equation once
+					double SqrtPart = sqrt(ExpandedRadius*ExpandedRadius - cY*cY);
+
+					double ip = cX - SqrtPart;
+
+					if (ip <= 0.0)
+					{
+						ip = cX + SqrtPart;
+					}
+
+					find = true;
+				}
+			}
+		}
+		++curOb;
+	}
+
+	if (find)
+	{
+		SteeringForce = Wander();
+	}
+	else
+	{
+		SteeringForce = Seek(survivor->Pos());
+	}
+	return SteeringForce;
 }
 
 

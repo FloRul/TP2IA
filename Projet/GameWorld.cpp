@@ -2,7 +2,6 @@
 #include "Vehicle.h"
 #include "LeaderAgent.h"
 #include "FollowerAgents.h"
-#include "Zombie.h"
 #include "constants.h"
 #include "Obstacle.h"
 #include "2d/Geometry.h"
@@ -87,8 +86,9 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				Prm.MaxTurnRatePerSecond, //max turn rate
 				Prm.VehicleScale);        //scale
 
-			if (!m_aHuman & agent_humain == 1) {
+			if (!m_aHuman && agent_humain == 1) {
 				m_aHuman = true;
+				pVehicle->SetHuman(m_aHuman);
 				m_HumanAgent = pVehicle;
 			}
 			else {
@@ -106,25 +106,57 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		//--------------------------------------------------------------//
 	}
 
-	//---------------LeaderFollowing behavior ----------------------//
+	//---------------LeaderFollowing Behavior ----------------------//
 	//--------------------------------------------------------------//
 	case 1:
 	{
 		int nb_pours[2] = { nb_poursuiveurs_l1, nb_poursuiveurs_l2 };
-		switch (nb_leader)
+		// ------------------------------------------------
+		// Ajout des leaders
+		// ------------------------------------------------
+		for (int i = 0; i < nb_leader; i++)
 		{
-		case 1:
-		case 2:
-		{
+			Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+				cy / 2.0 + RandomClamped()*cy / 2.0);
+
+			LeaderAgent* pLeader = new LeaderAgent(this,
+				SpawnPos,                 //initial position
+				RandFloat()*TwoPi,        //start rotation
+				Vector2D(0, 0),            //velocity
+				Prm.VehicleMass,          //mass
+				Prm.MaxSteeringForce,     //max force
+				Prm.MaxSpeed,             //max velocity
+				Prm.MaxTurnRatePerSecond, //max turn rate
+				Prm.VehicleScale);        //scale
+
+			// Set the MaxSpeed.
+			pLeader->SetMaxSpeed(70);
+
+			if (!m_aHuman && agent_humain == 1) {
+				m_aHuman = true;
+				pLeader->SetHuman(m_aHuman);
+				m_HumanAgent = pLeader;
+			}
+			else
+			{
+				pLeader->StartBehavior();
+			}
+
+			// add the leader into the vector
+			m_Vehicles.push_back(pLeader);
+			//add it to the cell subdivision
+			m_pCellSpace->AddEntity(pLeader);
+
 			// ------------------------------------------------
-			// Ajout des leaders
+			// Ajout des followers
 			// ------------------------------------------------
-			for (int i = 0; i < nb_leader; i++)
+			Vehicle* curr_leader = pLeader;
+			for (int u = 0; u < nb_pours[i]; u++)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
 
-				LeaderAgent* pLeader = new LeaderAgent(this,
+				FollowerAgents* pFollow = new FollowerAgents(this,
 					SpawnPos,                 //initial position
 					RandFloat()*TwoPi,        //start rotation
 					Vector2D(0, 0),            //velocity
@@ -134,66 +166,22 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-				// Set the MaxSpeed.
-				pLeader->SetMaxSpeed(70);
-
-				if (!m_aHuman & agent_humain == 1) {
-					m_aHuman = true;
-					m_HumanAgent = pLeader;
-				}
-				else
-				{
-					pLeader->StartBehavior();
-				}
-
-				// add the leader into the vector
-				m_Vehicles.push_back(pLeader);
+					// Set the MaxSpeed.
+				pFollow->SetMaxSpeed(100);
+				// Set the leader of the agent
+				pFollow->SetLeader(curr_leader);
+				// Add the vehicle to the vector
+				m_Vehicles.push_back(pFollow);
 				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pLeader);
+				m_pCellSpace->AddEntity(pFollow);
 
-				// ------------------------------------------------
-				// Ajout des followers
-				// ------------------------------------------------
-				Vehicle* curr_leader = pLeader;
-				for (int u = 0; u < nb_pours[i]; u++)
-				{
-					Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-						cy / 2.0 + RandomClamped()*cy / 2.0);
-
-					FollowerAgents* pFollow = new FollowerAgents(this,
-						SpawnPos,                 //initial position
-						RandFloat()*TwoPi,        //start rotation
-						Vector2D(0, 0),            //velocity
-						Prm.VehicleMass,          //mass
-						Prm.MaxSteeringForce,     //max force
-						Prm.MaxSpeed,             //max velocity
-						Prm.MaxTurnRatePerSecond, //max turn rate
-						Prm.VehicleScale);        //scale
-
-					 // Set the MaxSpeed.
-					pFollow->SetMaxSpeed(100);
-					// Set the leader of the agent
-					pFollow->SetLeader(curr_leader);
-					// Add the vehicle to the vector
-					m_Vehicles.push_back(pFollow);
-					//add it to the cell subdivision
-					m_pCellSpace->AddEntity(pFollow);
-
-					// Set the leader for the next agent
-					curr_leader = pFollow;
-				}
+				// Set the leader for the next agent
+				curr_leader = pFollow;
 			}
-			break;
 		}
-		default:
-			break;
-		}
-		break;
 	}
 	//--------------------------------------------------------------//
-
-
-	//-------------- FlockingV behavior ----------------------------//
+	//-------------- FlockingV Behavior ----------------------------//
 	//--------------------------------------------------------------//
 	case 2:
 	{
@@ -212,11 +200,12 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 				Prm.MaxTurnRatePerSecond, //max turn rate
 				Prm.VehicleScale);        //scale
 
-										  // FlokingV behavior
+			// FlokingV behavior
 			pVehicle->Steering()->FlockingVOn();
 
-			if (!m_aHuman & agent_humain == 1) {
+			if (!m_aHuman && agent_humain == 1) {
 				m_aHuman = true;
+				pVehicle->SetHuman(m_aHuman);
 				m_HumanAgent = pVehicle;
 			}
 
@@ -227,8 +216,86 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 		}
 		break;
 	}
-	/*default:
-	pVehicle->Steering()->WanderOn();*/
+	//--------------------------------------------------------------//
+	//----------------- Zombie Behavior ----------------------------//
+	//--------------------------------------------------------------//
+	case 3:
+	{
+		//Créer les obstacles du jeu
+		CreateObstacles();
+
+		//Create the survivor
+		Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+			cy / 2.0 + RandomClamped()*cy / 2.0);
+
+		Vehicle* pSurvivor = new Vehicle(this,
+										SpawnPos,                 //initial position
+										RandFloat()*TwoPi,        //start rotation
+										Vector2D(0, 0),            //velocity
+										Prm.VehicleMass,          //mass
+										Prm.MaxSteeringForce,     //max force
+										Prm.MaxSpeed,             //max velocity
+										Prm.MaxTurnRatePerSecond, //max turn rate
+										Prm.VehicleScale);        //scale
+
+		// Set the MaxSpeed.
+		pSurvivor->SetMaxSpeed(70);
+
+		if (!m_aHuman && agent_humain == 1) {
+			m_aHuman = true;
+			pSurvivor->SetHuman(m_aHuman);
+			m_HumanAgent = pSurvivor;
+		}
+		else {
+			// Standard behavior
+			//pVehicle->Steering()->HideZombie();
+		}
+
+		//add dans la liste de vehicule
+		m_Vehicles.push_back(pSurvivor);
+		//add it to the cell subdivision
+		m_pCellSpace->AddEntity(pSurvivor);
+
+		// Create the zombies
+		for (int a = 0; a < nb_agents; ++a)
+		{
+			Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+				cy / 2.0 + RandomClamped()*cy / 2.0);
+			// Create the agent
+			pVehicle = new Vehicle(this,
+							SpawnPos,                 //initial position
+							RandFloat()*TwoPi,        //start rotation
+							Vector2D(0, 0),            //velocity
+							Prm.VehicleMass,          //mass
+							Prm.MaxSteeringForce,     //max force
+							Prm.MaxSpeed - 200,             //max velocity
+							Prm.MaxTurnRatePerSecond, //max turn rate
+							Prm.VehicleScale);        //scale
+
+		    // Add the target to the current zombie
+			pVehicle->Steering()->SetTargetAgent1(pSurvivor);
+			// Set the behavior of the zombie
+			pVehicle->Steering()->ZombieLikeOn();
+
+			// Set the MaxSpeed.
+			pVehicle->SetMaxSpeed(70);
+
+			//add dans la liste de vehicule
+			m_Vehicles.push_back(pVehicle);
+			//add it to the cell subdivision
+			m_pCellSpace->AddEntity(pVehicle);
+		}
+
+		// Assign the ObstacleAvoidance
+		for (unsigned int i = 0; i < m_Vehicles.size(); ++i)
+		{
+			if (m_Vehicles[i] != m_HumanAgent)
+			{
+				m_Vehicles[i]->Steering()->ObstacleAvoidanceOn();
+			}
+		}
+		break;
+	}
 	}
 
 }

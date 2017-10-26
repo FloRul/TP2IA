@@ -46,6 +46,8 @@ protected:
 
   //when true, smoothing is active
   bool                  m_bSmoothingOn;
+
+  bool					m_isHuman;
   
 
   //keeps a track of the most recent update time. (some of the
@@ -83,6 +85,7 @@ public:
 
   void        Render();
 
+  void		  SetHuman(bool isHuman);
                                                                           
   //-------------------------------------------accessor methods
   SteeringBehavior*const  Steering()const{return m_pSteering;}

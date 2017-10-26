@@ -55,6 +55,7 @@ private:
     EvadeWeight             = GetNextParameterFloat() * SteeringForceTweaker;
     FollowPathWeight        = GetNextParameterFloat() * SteeringForceTweaker;
 	FlockingVWeight			= GetNextParameterFloat() * SteeringForceTweaker;
+	ZombieLikeWeight        = GetNextParameterFloat() * SteeringForceTweaker;
 
     ViewDistance            = GetNextParameterFloat();
 	MinDistance             = GetNextParameterFloat();
@@ -122,7 +123,8 @@ public:
   double HideWeight      ;
   double EvadeWeight     ;
   double FollowPathWeight;
-  double FlockingVWeight;
+  double FlockingVWeight ;
+  double ZombieLikeWeight;
 
   //how close a neighbour must be before an agent perceives it (considers it
   //to be within its neighborhood)

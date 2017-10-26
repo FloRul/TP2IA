@@ -84,7 +84,7 @@ void FollowerAgents::Render()
 
 	else
 	{
-		gdi->GreenPen();
+		gdi->BluePen();
 	}
 
 	if (Steering()->isInterposeOn())

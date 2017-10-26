@@ -75,11 +75,12 @@ private:
 		hide = 0x04000,
 		flock = 0x08000,
 		offset_pursuit = 0x10000,
-
 		// -- Flocking V -- //
 		flocking_v = 0x20000,
 		offset_vision = 0x40000,
 		slow_down = 0x80000,
+		// -- Zombie -- //
+		zombie = 0x1000000,
 	};
 
 private:
@@ -139,6 +140,7 @@ private:
 	double        m_dWeightHide;
 	double        m_dWeightEvade;
 	double        m_dWeightFollowPath;
+	double		  m_dWeightZombie;
 
 	// -- Flocking V -- //
 	//double		m_dWeightCohesionV;
@@ -244,10 +246,6 @@ private:
 	//method attempts to put an obstacle between itself and its opponent
 	Vector2D Hide(const Vehicle* hunter, const std::vector<BaseGameEntity*>& obstacles);
 
-	//Question1 leaderFollowingAgent
-	//The leader has a wander steeringBehavior while the followers have this one
-	Vector2D FollowLeaderWithOffset(const FollowerAgents* leader);
-
 	// -- Group Behaviors -- //
 
 	Vector2D Cohesion(const std::vector<Vehicle*> &agents);
@@ -257,13 +255,16 @@ private:
 	// -- Flocking V -- //
 
 	Vector2D CohesionV(const std::vector<Vehicle*> &agents);
-
 	Vector2D OffsetVision(const std::vector<Vehicle*> &agents);
-
 	Vector2D SlowDown(const std::vector<Vehicle*> &agents);
-
 	Vector2D FlockingV(const std::vector<Vehicle*> &agents);
 
+	// -- Zombie -- //
+
+	Vector2D ZombiesLike(const Vehicle* survivor,
+						const std::vector<BaseGameEntity*>& obstacles);
+
+	// -- Appendices Functions -- //
 	double AverageSpeed(const std::vector<Vehicle*> &neighbors);
 	Vehicle* getCloserAgent(const std::vector<Vehicle*> &neighbors);
 	Vehicle* getCloserAgentInFront(const std::vector<Vehicle*> &neighbors);
@@ -274,9 +275,6 @@ private:
 	Vector2D CohesionPlus(const std::vector<Vehicle*> &agents);
 	Vector2D SeparationPlus(const std::vector<Vehicle*> &agents);
 	Vector2D AlignmentPlus(const std::vector<Vehicle*> &agents);
-
-
-
 
 
 	/* .......................................................
@@ -367,6 +365,10 @@ public:
 	//void OffsetVisionOn() { m_iFlags |= offset_vision; }
 	//void SlowDownOn(){m_iFlags |= slow_down;}
 	void FlockingVOn() { m_iFlags |= flocking_v; }
+
+	// -- Zombies -- //
+
+	void ZombieLikeOn() { m_iFlags |= zombie; }
 
   void FleeOff()  {if(On(flee))   m_iFlags ^=flee;}
   void SeekOff()  {if(On(seek))   m_iFlags ^=seek;}

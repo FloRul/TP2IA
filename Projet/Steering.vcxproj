@@ -192,13 +192,11 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="Zombie.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseGameEntity.h" />
     <ClInclude Include="..\Common\misc\CellSpacePartition.h" />
     <ClInclude Include="constants.h" />
-    <ClInclude Include="Zombie.h" />
     <ClInclude Include="FollowerAgents.h" />
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="LeaderAgent.h" />

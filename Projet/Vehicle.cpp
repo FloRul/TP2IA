@@ -10,8 +10,6 @@
 using std::vector;
 using std::list;
 
-double couleur;
-
 //----------------------------- ctor -------------------------------------
 //------------------------------------------------------------------------
 Vehicle::Vehicle(GameWorld* world,
@@ -43,9 +41,9 @@ Vehicle::Vehicle(GameWorld* world,
   m_pSteering = new SteeringBehavior(this);    
 
   //set up the smoother
-  m_pHeadingSmoother = new Smoother<Vector2D>(Prm.NumSamplesForSmoothing, Vector2D(0.0, 0.0)); 
-  
-  couleur = 0;
+  m_pHeadingSmoother = new Smoother<Vector2D>(Prm.NumSamplesForSmoothing, Vector2D(0.0, 0.0));
+
+  m_isHuman = false;
  
 }
 
@@ -56,6 +54,12 @@ Vehicle::~Vehicle()
 {
   delete m_pSteering;
   delete m_pHeadingSmoother;
+}
+
+//----------------------------- SetHuman --------------------------------
+void Vehicle::SetHuman(bool isHuman)
+{
+	m_isHuman = isHuman;
 }
 
 //------------------------------ Update ----------------------------------
@@ -115,11 +119,6 @@ void Vehicle::Update(double time_elapsed)
   }
 }
 
-void Vehicle::changeCouleur(double c)
-{
-	couleur = c;
-}
-
 
 //-------------------------------- Render -------------------------------------
 //-----------------------------------------------------------------------------
@@ -138,13 +137,9 @@ void Vehicle::Render()
 
   else
   {
-	  if (couleur == 0)
+	  if (!m_isHuman)
 	  {
 		  gdi->BluePen();
-	  }
-	  else if (couleur == 1)
-	  {
-		  gdi->RedPen();
 	  }
 	  else
 	  {
