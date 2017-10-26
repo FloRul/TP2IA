@@ -42,8 +42,6 @@ public:
 	~FollowerAgents();
 	Vehicle* GetLeader();
 	void SetLeader(Vehicle* _leader);
-	
-	void UpdateSteering();
 
 	void        Render();
 

@@ -110,99 +110,21 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 	//--------------------------------------------------------------//
 	case 1:
 	{
-
-		LeaderAgent* pLeader1;
+		int nb_pours[2] = { nb_poursuiveurs_l1, nb_poursuiveurs_l2 };
 		switch (nb_leader)
 		{
-			//---------------- 1 seul leader ---------------------------
-			//----------------------------------------------------------
 		case 1:
-			for (int i = 0; i < nb_leader; i++)
-			{
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-
-				pLeader1 = new LeaderAgent(this,
-					SpawnPos,                 //initial position
-					RandFloat()*TwoPi,        //start rotation
-					Vector2D(0, 0),            //velocity
-					Prm.VehicleMass,          //mass
-					Prm.MaxSteeringForce,     //max force
-					Prm.MaxSpeed,             //max velocity
-					Prm.MaxTurnRatePerSecond, //max turn rate
-					Prm.VehicleScale);        //scale
-
-
-				if (!m_aHuman & agent_humain==1) {
-					m_aHuman = true;
-					m_HumanAgent = pLeader1;
-				}
-				else {
-					// Standard behavior
-					pLeader1->Steering()->WanderOn();
-				}
-
-				
-				
-				//add dans la liste de vehicule
-
-
-				m_Leaders.push_back(pLeader1);
-				m_Vehicles.push_back(pLeader1);
-
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pLeader1);
-			}
-
-			//Ajout des followers
-			for (int i = 0; i < nb_poursuiveurs_l1; i++)
-			{
-
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-
-				FollowerAgents* pFollow = new FollowerAgents(this,
-					SpawnPos,                 //initial position
-					RandFloat()*TwoPi,        //start rotation
-					Vector2D(0, 0),            //velocity
-					Prm.VehicleMass,          //mass
-					Prm.MaxSteeringForce,     //max force
-					Prm.MaxSpeed,             //max velocity
-					Prm.MaxTurnRatePerSecond, //max turn rate
-					Prm.VehicleScale);        //scale
-
-
-
-
-
-											  //add dans la liste des followers
-				m_Vehicles.push_back(pFollow);
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pFollow);
-				listeFollowerL1.push_back(pFollow);
-			}
-			//Relier les agents entre eux puis le dernier au leader
-			for (int i = 0; i < (int)listeFollowerL1.size() - 1; i++)
-			{
-				FollowerAgents* tempFAgent = listeFollowerL1.at(i);
-				tempFAgent->SetLeader(listeFollowerL1.at(i + 1));
-				tempFAgent->UpdateSteering();
-			}
-
-			listeFollowerL1.at(listeFollowerL1.size() - 1)->SetLeader(m_Leaders.at(0));
-			listeFollowerL1.at(listeFollowerL1.size() - 1)->UpdateSteering();
-			break;
-
-			//----------------------2 Leaders -----------------------------------------
-			//-------------------------------------------------------------------------
 		case 2:
-			//ajout de 2 leader
+		{
+			// ------------------------------------------------
+			// Ajout des leaders
+			// ------------------------------------------------
 			for (int i = 0; i < nb_leader; i++)
 			{
 				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
 					cy / 2.0 + RandomClamped()*cy / 2.0);
 
-				LeaderAgent* pLeader2 = new LeaderAgent(this,
+				LeaderAgent* pLeader = new LeaderAgent(this,
 					SpawnPos,                 //initial position
 					RandFloat()*TwoPi,        //start rotation
 					Vector2D(0, 0),            //velocity
@@ -214,91 +136,50 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 
 				if (!m_aHuman & agent_humain == 1) {
 					m_aHuman = true;
-					m_HumanAgent = pLeader2;
+					m_HumanAgent = pLeader;
 				}
 
-				m_Leaders.push_back(pLeader2);
-
-				m_Vehicles.push_back(pLeader2);
+				// Set the MaxSpeed.
+				pLeader->SetMaxSpeed(70);
+				// add the leader into the vector
+				m_Vehicles.push_back(pLeader);
 				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pLeader2);
+				m_pCellSpace->AddEntity(pLeader);
+
+				// ------------------------------------------------
+				// Ajout des followers
+				// ------------------------------------------------
+				Vehicle* curr_leader = pLeader;
+				for (int u = 0; u < nb_pours[i]; u++)
+				{
+					Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
+						cy / 2.0 + RandomClamped()*cy / 2.0);
+
+					FollowerAgents* pFollow = new FollowerAgents(this,
+						SpawnPos,                 //initial position
+						RandFloat()*TwoPi,        //start rotation
+						Vector2D(0, 0),            //velocity
+						Prm.VehicleMass,          //mass
+						Prm.MaxSteeringForce,     //max force
+						Prm.MaxSpeed,             //max velocity
+						Prm.MaxTurnRatePerSecond, //max turn rate
+						Prm.VehicleScale);        //scale
+
+					 // Set the MaxSpeed.
+					pFollow->SetMaxSpeed(100);
+					// Set the leader of the agent
+					pFollow->SetLeader(curr_leader);
+					// Add the vehicle to the vector
+					m_Vehicles.push_back(pFollow);
+					//add it to the cell subdivision
+					m_pCellSpace->AddEntity(pFollow);
+
+					// Set the leader for the next agent
+					curr_leader = pFollow;
+				}
 			}
-
-			//Ajout des followers L1
-			for (int i = 0; i < nb_poursuiveurs_l1; i++)
-			{
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-				FollowerAgents* pFollow = new FollowerAgents(this,
-					SpawnPos,                 //initial position
-					RandFloat()*TwoPi,        //start rotation
-					Vector2D(0, 0),            //velocity
-					Prm.VehicleMass,          //mass
-					Prm.MaxSteeringForce,     //max force
-					Prm.MaxSpeed,             //max velocity
-					Prm.MaxTurnRatePerSecond, //max turn rate
-					Prm.VehicleScale);        //scale
-
-
-				
-				
-
-
-				listeFollowerL1.push_back(pFollow);
-				m_Vehicles.push_back(pFollow);
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pFollow);
-			}
-			//Relier les agents entre eux puis le dernier au leader
-			for (int i = 0; i < (int)listeFollowerL1.size() - 1; i++)
-			{
-				FollowerAgents* tempFAgent = listeFollowerL1.at(i);
-				tempFAgent->SetLeader(listeFollowerL1.at(i + 1));
-				tempFAgent->UpdateSteering();
-
-				m_Vehicles.push_back(tempFAgent);
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(tempFAgent);
-			}
-			listeFollowerL1.at(listeFollowerL1.size() - 1)->SetLeader(m_Leaders.at(0));
-			listeFollowerL1.at(listeFollowerL1.size() - 1)->UpdateSteering();
-
-			//-----------------------------------------------------------------------
-
-			//Ajout des followers L2
-			//-----------------------------------------------------------------------
-			for (int i = 0; i < nb_poursuiveurs_l2; i++)
-			{
-				Vector2D SpawnPos = Vector2D(cx / 2.0 + RandomClamped()*cx / 2.0,
-					cy / 2.0 + RandomClamped()*cy / 2.0);
-
-				FollowerAgents* pFollow = new FollowerAgents(this,
-					SpawnPos,                 //initial position
-					RandFloat()*TwoPi,        //start rotation
-					Vector2D(0, 0),            //velocity
-					Prm.VehicleMass,          //mass
-					Prm.MaxSteeringForce,     //max force
-					Prm.MaxSpeed,             //max velocity
-					Prm.MaxTurnRatePerSecond, //max turn rate
-					Prm.VehicleScale);        //scale
-
-
-				m_Vehicles.push_back(pFollow);
-				//add it to the cell subdivision
-				m_pCellSpace->AddEntity(pFollow);
-				//add dans la liste des followers
-				listeFollowerL2.push_back(pFollow);
-			}
-			//Relier les agents entre eux puis le dernier au leader
-			for (int i = 0; i < (int)listeFollowerL2.size() - 1; i++)
-			{
-				FollowerAgents* tempFAgent = listeFollowerL2.at(i);
-				tempFAgent->SetLeader(listeFollowerL2.at(i + 1));
-				tempFAgent->UpdateSteering();
-			}
-			listeFollowerL2.at(listeFollowerL2.size() - 1)->SetLeader(m_Leaders.at(1));
-			listeFollowerL2.at(listeFollowerL2.size() - 1)->UpdateSteering();
 			break;
+		}
 		default:
 			break;
 		}
@@ -361,11 +242,6 @@ GameWorld::~GameWorld()
     delete m_Vehicles[a];
   }
 
-  for (unsigned int a = 0; a<m_Leaders.size(); ++a)
-  {
-	  delete m_Leaders[a];
-  }
-
   for (unsigned int ob=0; ob<m_Obstacles.size(); ++ob)
   {
     delete m_Obstacles[ob];
@@ -388,8 +264,6 @@ void GameWorld::Update(double time_elapsed)
   static Smoother<double> FrameRateSmoother(SampleRate, 0.0);
 
   m_dAvFrameTime = FrameRateSmoother.Update(time_elapsed);
-  
-  // TODO update leaders
 
   //update the vehicles
   for (unsigned int a=0; a<m_Vehicles.size(); ++a)

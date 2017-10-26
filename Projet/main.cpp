@@ -141,6 +141,11 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
           case 'R':
             {
                delete g_GameWorld;
+
+			   // Ask user to enter informations for the application
+			   if (DialogBox(hinst, "DIALOG1", hwnd, (DLGPROC)Dialog1Proc) == DB_OK)
+				   InvalidateRect(hwnd, NULL, TRUE);
+
 			   // g_GameWorld = new GameWorld(cxClient, cyClient);
                g_GameWorld = new GameWorld(cxClient, cyClient, nb_leader, agent_humain,
 				   comportement, nb_agent, nb_poursuiveur1, nb_poursuiveur2, nb_poursuiveur3, offset);

@@ -42,9 +42,6 @@ private:
   //a container of followingAgents
   std::vector<FollowerAgents*>  m_FollowerAgents;
 
-  //a container of all the leaders
-  std::vector<Vehicle*>         m_Leaders;
-
   //any obstacles
   std::vector<BaseGameEntity*>  m_Obstacles;
 
