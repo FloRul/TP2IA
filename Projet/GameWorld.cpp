@@ -83,7 +83,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-				if (!m_aHuman & agent_humain!=1) {
+				if (!m_aHuman & agent_humain==1) {
 					m_aHuman = true;
 					m_HumanAgent = pVehicle;
 				}
@@ -122,7 +122,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-				if (!m_aHuman & agent_humain != 1) {
+				if (!m_aHuman & agent_humain == 1) {
 					m_aHuman = true;
 					m_HumanAgent = pLeader;
 				}
@@ -211,7 +211,7 @@ GameWorld::GameWorld(int cx, int cy, int nb_leader, int agent_humain,
 					Prm.MaxTurnRatePerSecond, //max turn rate
 					Prm.VehicleScale);        //scale
 
-				if (!m_aHuman & agent_humain != 1) {
+				if (!m_aHuman & agent_humain == 1) {
 					m_aHuman = true;
 					m_HumanAgent = pVehicle;
 				}
